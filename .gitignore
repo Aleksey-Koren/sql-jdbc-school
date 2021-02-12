@@ -1,0 +1,10 @@
+/bin/
+/.settings/
+/.dbeaver/
+
+
+.project
+.classpath
+module-info.java
+/target/
+*MyClass.java
