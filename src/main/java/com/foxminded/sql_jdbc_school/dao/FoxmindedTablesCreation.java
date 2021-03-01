@@ -1,4 +1,4 @@
-package com.foxminded.sql_jdbc_runner.dao;
+package com.foxminded.sql_jdbc_school.dao;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,28 +8,29 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.stream.Stream;
 
-import com.foxminded.sql_jdbc_runner.dao.util.ConnectionManager;
+import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 
-public class TablesCreation {
+public class FoxmindedTablesCreation implements TablesCreation {
 
     private static final Path TABLE_CREATION = Path.of("src", "main", "resources"
                                                             , "sql", "TablesCreation.sql");
+    
+    @Override
     public void create() {     
         try(Connection connection = ConnectionManager.open();
-            PreparedStatement createTables = connection.prepareStatement(getScript())) {
+            PreparedStatement createTables = connection.prepareStatement(getScript(TABLE_CREATION))) {
             createTables.executeUpdate();
         } catch (SQLException e) {
             throw new DaoRuntimeException("Exception in tables creation", e);
         }
     }
     
-    private String getScript() {
-        String sql;
-        try(Stream<String> lines = Files.lines(TABLE_CREATION)) {
-            sql = lines.reduce("", (a,b) -> a + b);
-            return sql;
+    private static String getScript(Path path) {      
+        try(Stream<String> lines = Files.lines(path)) {
+            return lines.reduce("", (a,b) -> a + b);
         } catch (IOException e) {
             throw new DaoRuntimeException("Can't read sql script", e);
         } 
     }
+    
 }

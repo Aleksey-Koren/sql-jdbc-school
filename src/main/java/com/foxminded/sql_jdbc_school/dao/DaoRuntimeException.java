@@ -1,4 +1,4 @@
-package com.foxminded.sql_jdbc_runner.dao;
+package com.foxminded.sql_jdbc_school.dao;
 
 public class DaoRuntimeException extends RuntimeException {
 

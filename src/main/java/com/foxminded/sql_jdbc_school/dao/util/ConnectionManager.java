@@ -1,11 +1,10 @@
-package com.foxminded.sql_jdbc_runner.dao.util;
+package com.foxminded.sql_jdbc_school.dao.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.foxminded.sql_jdbc_runner.dao.DaoRuntimeException;
-
+import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
 
 public final class ConnectionManager {
     
@@ -14,16 +13,16 @@ public final class ConnectionManager {
     private static final String PASSWORD_KEY = "db.password";
     
     private ConnectionManager() {
-        
+
     }
     
     public static Connection open(){
-        Connection con = null;
-        try {
-            con = DriverManager.getConnection(PropertiesUtil.get(URL_KEY),
+        Connection connection = null;
+        try {            
+            connection = DriverManager.getConnection(PropertiesUtil.get(URL_KEY),
                                               PropertiesUtil.get(USERNAME_KEY),
                                               PropertiesUtil.get(PASSWORD_KEY));
-            return con;
+            return connection;
         } catch (SQLException e) {
             throw new DaoRuntimeException("Can't create connection", e);
         } 

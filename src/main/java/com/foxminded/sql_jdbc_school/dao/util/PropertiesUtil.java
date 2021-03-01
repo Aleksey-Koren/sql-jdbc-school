@@ -1,9 +1,10 @@
-package com.foxminded.sql_jdbc_runner.dao.util;
+package com.foxminded.sql_jdbc_school.dao.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import com.foxminded.sql_jdbc_runner.dao.DaoRuntimeException;
+
+import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
 
 
 public final class PropertiesUtil {
