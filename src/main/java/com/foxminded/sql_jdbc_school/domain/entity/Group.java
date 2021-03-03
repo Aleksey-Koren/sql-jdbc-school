@@ -9,6 +9,10 @@ public class Group {
         this.id = id;
         this.name = name;
     }
+    
+    public Group(String name) {
+        this.name = name;
+    }
 
     public Integer getId() {
         return id;

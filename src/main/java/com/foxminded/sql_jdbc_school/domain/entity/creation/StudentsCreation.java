@@ -20,17 +20,15 @@ public class StudentsCreation implements EntityCreation<Student> {
     
     @Override
     public List<Student> create() throws IOException, NoSuchAlgorithmException {
+        List<Student> students = new ArrayList<>(); 
         List<String> firstNames = readFile(FIRST_NAMES_PATH);
         List<String> lastNames = readFile(LAST_NAMES_PATH);
         Random random = SecureRandom.getInstanceStrong();
-        List<Student> students = new ArrayList<>();
-        
         Stream.generate(() -> 1).
         limit(200).
         forEach(x -> students.add(new Student(firstNames.get(random.nextInt(20)),
                                               lastNames.get(random.nextInt(20))
-                                              )));
-        
+                                              )));      
         return students;
     }
     
