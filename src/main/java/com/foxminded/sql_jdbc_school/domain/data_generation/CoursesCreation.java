@@ -1,4 +1,4 @@
-package com.foxminded.sql_jdbc_school.domain.entity.creation;
+package com.foxminded.sql_jdbc_school.domain.data_generation;
 
 import java.io.IOException;
 import java.nio.file.Files;

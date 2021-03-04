@@ -1,10 +1,8 @@
-package com.foxminded.sql_jdbc_school.domain.entity.creation;
+package com.foxminded.sql_jdbc_school.domain.data_generation;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,20 +13,24 @@ import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
 public class StudentsCreation implements EntityCreation<Student> {
     
-    private static final Path FIRST_NAMES_PATH = Path.of("src", "main", "resources", "First_names.txt");
-    private static final Path LAST_NAMES_PATH = Path.of("src", "main", "resources", "Last_names.txt");
+    private static final Path FIRST_NAMES_PATH = Path
+                            .of("src", "main", "resources", "First_names.txt");
+    private static final Path LAST_NAMES_PATH = Path
+                            .of("src", "main", "resources", "Last_names.txt");
+    private static final int QUANTITY_OF_STUDENTS = 200;
     
     @Override
-    public List<Student> create() throws IOException, NoSuchAlgorithmException {
+    public List<Student> create() throws IOException {
         List<Student> students = new ArrayList<>(); 
         List<String> firstNames = readFile(FIRST_NAMES_PATH);
         List<String> lastNames = readFile(LAST_NAMES_PATH);
-        Random random = SecureRandom.getInstanceStrong();
-        Stream.generate(() -> 1).
-        limit(200).
-        forEach(x -> students.add(new Student(firstNames.get(random.nextInt(20)),
-                                              lastNames.get(random.nextInt(20))
-                                              )));      
+        
+        Random random = new Random();
+        for(int i = 0; i < QUANTITY_OF_STUDENTS; i++) {
+            students.add(new Student(firstNames.get(random.nextInt(firstNames.size())),
+                                     lastNames.get(random.nextInt(lastNames.size()))
+                                     ));
+        }        
         return students;
     }
     

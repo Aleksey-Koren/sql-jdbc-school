@@ -23,7 +23,7 @@ CREATE TABLE courses
 (
     id SERIAL PRIMARY KEY,
     course_name VARCHAR(32) UNIQUE NOT NULL,
-    course_discription TEXT NOT NULL
+    course_description TEXT NOT NULL
 );
 
 CREATE TABLE students_courses

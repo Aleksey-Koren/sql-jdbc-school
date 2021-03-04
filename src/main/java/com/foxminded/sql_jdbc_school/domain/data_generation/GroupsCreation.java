@@ -1,4 +1,4 @@
-package com.foxminded.sql_jdbc_school.domain.entity.creation;
+package com.foxminded.sql_jdbc_school.domain.data_generation;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -13,6 +13,11 @@ import com.foxminded.sql_jdbc_school.domain.entity.Group;
 public class GroupsCreation implements EntityCreation<Group> {
     
     private static final String HYPHEN = "-";
+    private static final int QUANTITY_OF_GROUPS = 10;
+    private static final int CHAR_RANGE_BEGIN = 97;
+    private static final int CHAR_RANGE_END = 123;
+    private static final int NUM_RANGE_BEGIN = 10;
+    private static final int NUM_RANGE_END = 100;
 
     @Override
     public List<Group> create() throws NoSuchAlgorithmException {
@@ -27,7 +32,7 @@ public class GroupsCreation implements EntityCreation<Group> {
     private  Set<String> retriveSetOfNames() throws NoSuchAlgorithmException {
         Set<String> result = new HashSet<>();
         
-        while(result.size() < 10) {
+        while(result.size() < QUANTITY_OF_GROUPS) {
             result.add(retriveName());
         }
         return result;
@@ -41,7 +46,7 @@ public class GroupsCreation implements EntityCreation<Group> {
     
     private String retriveRandomString() throws NoSuchAlgorithmException {
         Random randomInteger = SecureRandom.getInstanceStrong();
-        return  randomInteger.ints(97, 123)
+        return  randomInteger.ints(CHAR_RANGE_BEGIN, CHAR_RANGE_END)
         .mapToObj(i -> (char) i)
         .limit(2)
         .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
@@ -50,7 +55,7 @@ public class GroupsCreation implements EntityCreation<Group> {
     
     private String retriveRandomNumber() throws NoSuchAlgorithmException {
         Random randomInteger = SecureRandom.getInstanceStrong();
-        return "" + randomInteger.ints(10,99)
+        return "" + randomInteger.ints(NUM_RANGE_BEGIN, NUM_RANGE_END)
                                  .limit(1)
                                  .sum();
     }

@@ -10,12 +10,11 @@ import java.util.stream.Stream;
 
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 
-public class FoxmindedTablesCreation implements TablesCreation {
+public class SchoolTablesCreation {
 
     private static final Path TABLE_CREATION = Path.of("src", "main", "resources"
                                                             , "sql", "TablesCreation.sql");
     
-    @Override
     public void create() {     
         try(Connection connection = ConnectionManager.open();
             PreparedStatement createTables = connection.prepareStatement(getScript(TABLE_CREATION))) {
@@ -32,5 +31,4 @@ public class FoxmindedTablesCreation implements TablesCreation {
             throw new DaoRuntimeException("Can't read sql script", e);
         } 
     }
-    
 }
