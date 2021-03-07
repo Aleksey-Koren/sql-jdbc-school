@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class StudentsCreation implements EntityCreation<Student> {
+public class StudentsGeneration implements EntityGeneration<Student> {
     
     private static final Path FIRST_NAMES_PATH = Path
                             .of("src", "main", "resources", "First_names.txt");
@@ -20,7 +20,7 @@ public class StudentsCreation implements EntityCreation<Student> {
     private static final int QUANTITY_OF_STUDENTS = 200;
     
     @Override
-    public List<Student> create() throws IOException {
+    public List<Student> generate() throws IOException {
         List<Student> students = new ArrayList<>(); 
         List<String> firstNames = readFile(FIRST_NAMES_PATH);
         List<String> lastNames = readFile(LAST_NAMES_PATH);

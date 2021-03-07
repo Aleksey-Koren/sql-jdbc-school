@@ -8,13 +8,13 @@ import java.util.List;
 
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 
-public class CoursesCreation implements EntityCreation<Course> {
+public class CoursesGeneration implements EntityGeneration<Course> {
     
     private static final Path COURSES_DATA_PATH = Path
                                 .of("src", "main", "resources", "Courses.txt");
 
     @Override
-    public List<Course> create() throws IOException  {
+    public List<Course> generate() throws IOException  {
         String file = readFile();
         List<Course> courses = new ArrayList<>();
         String[] coursesData = file.split(";");

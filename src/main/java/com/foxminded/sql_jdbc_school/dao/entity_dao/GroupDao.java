@@ -1,13 +1,13 @@
-package com.foxminded.sql_jdbc_school.dao;
+package com.foxminded.sql_jdbc_school.dao.entity_dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
+import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 
@@ -30,11 +30,11 @@ public class GroupDao {
             (?);
             """;
     
-    public List<Group> saveAll(List<Group> groups) throws SQLException{
+    public List<Group> saveAll(List<Group> groups) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
-            connection = ConnectionManager.open();
+            connection = ConnectionManager.get();
             save = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS);
             connection.setAutoCommit(false);
             for (Group group : groups) {
@@ -47,19 +47,29 @@ public class GroupDao {
                 }                
             }
             connection.commit();
+            connection.setAutoCommit(true);
             return groups;
         }catch (Exception e){
             if(connection != null) {
-                connection.rollback();
+                try {
+                    connection.rollback();
+                } catch (SQLException e1) {
+                    throw new DaoRuntimeException(e1);
+                }
             }
-            throw e;
+            
+            throw new DaoRuntimeException(e);
         }finally {
-            if(connection != null) {
-                connection.close();
-            }
-            if(save != null) {
-                save.close();
-            }
+            try {
+                if(save != null) {
+                    save.close();
+                }
+                if(connection != null) {
+                    connection.close();
+                }
+            }catch(SQLException e) {
+                throw new DaoRuntimeException(e);
+            }         
         }
     }
 }

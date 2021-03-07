@@ -10,7 +10,7 @@ import java.util.Set;
 
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 
-public class GroupsCreation implements EntityCreation<Group> {
+public class GroupsGeneration implements EntityGeneration<Group> {
     
     private static final String HYPHEN = "-";
     private static final int QUANTITY_OF_GROUPS = 10;
@@ -20,7 +20,7 @@ public class GroupsCreation implements EntityCreation<Group> {
     private static final int NUM_RANGE_END = 100;
 
     @Override
-    public List<Group> create() throws NoSuchAlgorithmException {
+    public List<Group> generate() throws NoSuchAlgorithmException {
         Set<String> names = retriveSetOfNames();
         List<Group> groups = new ArrayList<>();
         for(String name : names) {
@@ -38,14 +38,14 @@ public class GroupsCreation implements EntityCreation<Group> {
         return result;
     }
      
-    private String retriveName() throws NoSuchAlgorithmException {
+    private String retriveName() {
         String firstPart = retriveRandomString();
         String secondPart = retriveRandomNumber();
         return firstPart + HYPHEN + secondPart;
     }
     
-    private String retriveRandomString() throws NoSuchAlgorithmException {
-        Random randomInteger = SecureRandom.getInstanceStrong();
+    private String retriveRandomString() {
+        Random randomInteger = new Random();
         return  randomInteger.ints(CHAR_RANGE_BEGIN, CHAR_RANGE_END)
         .mapToObj(i -> (char) i)
         .limit(2)
@@ -53,8 +53,8 @@ public class GroupsCreation implements EntityCreation<Group> {
         .toString();
     }
     
-    private String retriveRandomNumber() throws NoSuchAlgorithmException {
-        Random randomInteger = SecureRandom.getInstanceStrong();
+    private String retriveRandomNumber() {
+        Random randomInteger = new Random();
         return "" + randomInteger.ints(NUM_RANGE_BEGIN, NUM_RANGE_END)
                                  .limit(1)
                                  .sum();

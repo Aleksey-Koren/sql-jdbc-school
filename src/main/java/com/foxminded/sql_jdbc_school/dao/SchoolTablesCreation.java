@@ -16,7 +16,7 @@ public class SchoolTablesCreation {
                                                             , "sql", "TablesCreation.sql");
     
     public void create() {     
-        try(Connection connection = ConnectionManager.open();
+        try(Connection connection = ConnectionManager.get();
             PreparedStatement createTables = connection.prepareStatement(getScript(TABLE_CREATION))) {
             createTables.executeUpdate();
         } catch (SQLException e) {
