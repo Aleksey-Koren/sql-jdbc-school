@@ -6,14 +6,12 @@ public class Student {
     private Integer groupId;
     private String firstName;
     private String lastName;
-    
-    
-    
+       
     public Student(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
     }
-
+    
     public Student(Integer id, Integer groupId, String firstName, String lastName) {
         this.id = id;
         this.groupId = groupId;

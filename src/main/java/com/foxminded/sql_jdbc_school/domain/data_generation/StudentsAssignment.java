@@ -58,7 +58,7 @@ public class StudentsAssignment {
         for(Student student : students) {
             Set<Integer> courseIdToAssign = retriveIdsToAssign(courseId);
             StudentsCoursesDao studentsCoursesDao = StudentsCoursesDao.getInstance();
-            studentsCoursesDao.addStudentToCourses(student, courseIdToAssign);
+            studentsCoursesDao.addStudentToCourses(student.getId(), courseIdToAssign);
         }
     }
     

@@ -17,7 +17,7 @@ import com.foxminded.sql_jdbc_school.domain.data_generation.StudentsGeneration;
 
 public class RandomDataRunner {
     
-    public static void run() throws Exception  {
+    public void run() throws Exception  {
         SchoolTablesCreation tablesCreator = new SchoolTablesCreation();
 
         SchoolEntitiesGeneration entityCreation = 
@@ -39,13 +39,11 @@ public class RandomDataRunner {
 
         dto.setStudents(assignment.assignGroups(dto));
         studentDao.updateAll(dto.getStudents());
-//        dto.getStudents().forEach(s -> System.out.println(s.toString()));
-        System.out.println("------------------------------");
         assignment.assignCourses(dto);
     }
     
     
-    public static void main(String[] args) throws Exception {
-        RandomDataRunner.run();
-    }
+//    public static void main(String[] args) throws Exception {
+//        RandomDataRunner.run();
+//    }
 }

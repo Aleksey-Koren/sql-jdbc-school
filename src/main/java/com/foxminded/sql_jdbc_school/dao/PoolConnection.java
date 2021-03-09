@@ -1,6 +1,7 @@
 package com.foxminded.sql_jdbc_school.dao;
 
 import java.sql.Array;
+
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
@@ -21,12 +22,23 @@ import java.util.concurrent.Executor;
 
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 
+/* This PoolConnection is wrapper for Connection.
+ * It behaves almost like standard Connection.
+ * There is only one method overrided -- "close()".
+ * Instead closing connection, this method puts this.PoolConnection to 
+ * com.foxminded.sql_jdbc_school.dao.util.ConnectionManager.POOL  
+ */
 public class PoolConnection implements Connection {
-    
+
     private Connection connection;
-    
+
     public PoolConnection(Connection connection) {
         this.connection = connection;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        ConnectionManager.put(this);
     }
 
     @Override
@@ -57,7 +69,7 @@ public class PoolConnection implements Connection {
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         connection.setAutoCommit(autoCommit);
-        
+
     }
 
     @Override
@@ -73,11 +85,6 @@ public class PoolConnection implements Connection {
     @Override
     public void rollback() throws SQLException {
         connection.rollback();
-    }
-
-    @Override
-    public void close() throws SQLException {
-        ConnectionManager.put(this);
     }
 
     @Override
@@ -137,7 +144,7 @@ public class PoolConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
-            throws SQLException {   
+            throws SQLException {
         return connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
     }
 
@@ -298,8 +305,6 @@ public class PoolConnection implements Connection {
     public int getNetworkTimeout() throws SQLException {
         return connection.getNetworkTimeout();
     }
-
-
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {

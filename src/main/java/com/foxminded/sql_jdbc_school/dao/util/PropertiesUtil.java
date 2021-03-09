@@ -31,7 +31,7 @@ public final class PropertiesUtil {
             }
             PROPERTIES.load(stream);
         } catch (IOException e) {
-            throw new DaoRuntimeException("PROPERTIES is not initialized", e);
+            throw new DaoRuntimeException(e);
         }
     }
 }

@@ -24,12 +24,18 @@ public class StudentsCoursesDao {
             VALUES
             (?, ?);
             """;
+    private static final String DELETE_SQL = """
+            DELETE FROM students_courses
+            WHERE student_id = ?
+            AND course_id = ?;
+            """;
     
     public static StudentsCoursesDao getInstance() {
         return INSTANCE;
     }
     
-    public void addStudentToCourses(Student student, Set<Integer> courseId) {
+//    e. Add a student to the course (from a list)
+    public void addStudentToCourses(Integer studentId, Set<Integer> courseId) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -37,13 +43,11 @@ public class StudentsCoursesDao {
             save = connection.prepareStatement(SAVE_SQL);
             connection.setAutoCommit(false);
             for(Integer id : courseId) {
-                save.setInt(1, student.getId());
+                save.setInt(1, studentId);
                 save.setInt(2, id);
                 save.executeUpdate();
-            }
-            
+            }      
             connection.commit();
-            
         }catch(Exception e) {
             if(connection != null) {
                 try {
@@ -52,7 +56,6 @@ public class StudentsCoursesDao {
                     throw new DaoRuntimeException(e1);
                 }
             }
-            
             throw new DaoRuntimeException(e);
         }finally {
             try {
@@ -63,8 +66,20 @@ public class StudentsCoursesDao {
                     connection.close();
                 }       
             }catch(SQLException e) {
-                throw new DaoRuntimeException();
+                throw new DaoRuntimeException(e);
             }      
         }
-    }       
+    }
+    
+//    f. Remove the student from one of his or her courses
+    public boolean deleteStudentFromCourse(int studentId, int courseId ) {
+        try (Connection connection = ConnectionManager.get();
+                PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
+            delete.setInt(1, studentId);
+            delete.setInt(2, courseId);
+            return delete.executeUpdate() > 0;
+        }catch(SQLException e) {
+            throw new DaoRuntimeException(e);
+        }
+    }
 }

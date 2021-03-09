@@ -49,7 +49,7 @@ public final class ConnectionManager {
                                               PropertiesUtil.get(PASSWORD_KEY));
             return connection;
         } catch (SQLException e) {
-            throw new DaoRuntimeException("Can't create connection", e);
+            throw new DaoRuntimeException(e);
         } 
     }
 }
