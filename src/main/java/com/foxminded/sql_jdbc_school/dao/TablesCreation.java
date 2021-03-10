@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 
-public class SchoolTablesCreation {
+public class TablesCreation {
 
     private static final Path TABLE_CREATION = Path.of("src", "main", "resources"
                                                             , "sql", "TablesCreation.sql");

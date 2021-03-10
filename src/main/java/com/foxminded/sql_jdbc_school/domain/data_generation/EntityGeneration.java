@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface EntityGeneration<E> {
     
-    List<E> generate() throws Exception;
+    List<E> generate();
 }

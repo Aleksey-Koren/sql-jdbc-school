@@ -1,7 +1,5 @@
 package com.foxminded.sql_jdbc_school.domain.data_generation;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +8,7 @@ import java.util.Set;
 
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 
-public class GroupsGeneration implements EntityGeneration<Group> {
+public class RandomGroups implements EntityGeneration<Group> {
     
     private static final String HYPHEN = "-";
     private static final int QUANTITY_OF_GROUPS = 10;
@@ -20,7 +18,7 @@ public class GroupsGeneration implements EntityGeneration<Group> {
     private static final int NUM_RANGE_END = 100;
 
     @Override
-    public List<Group> generate() throws NoSuchAlgorithmException {
+    public List<Group> generate() {
         Set<String> names = retriveSetOfNames();
         List<Group> groups = new ArrayList<>();
         for(String name : names) {
@@ -29,9 +27,8 @@ public class GroupsGeneration implements EntityGeneration<Group> {
         return groups;
     }
     
-    private  Set<String> retriveSetOfNames() throws NoSuchAlgorithmException {
-        Set<String> result = new HashSet<>();
-        
+    private  Set<String> retriveSetOfNames() {
+        Set<String> result = new HashSet<>();   
         while(result.size() < QUANTITY_OF_GROUPS) {
             result.add(retriveName());
         }

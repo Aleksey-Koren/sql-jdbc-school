@@ -9,18 +9,21 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.foxminded.sql_jdbc_school.dao.util.PropertiesUtil;
+import com.foxminded.sql_jdbc_school.domain.DomainRuntimeException;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class StudentsGeneration implements EntityGeneration<Student> {
+public class RandomStudents implements EntityGeneration<Student> {
     
     private static final Path FIRST_NAMES_PATH = Path
                             .of("src", "main", "resources", "First_names.txt");
     private static final Path LAST_NAMES_PATH = Path
                             .of("src", "main", "resources", "Last_names.txt");
-    private static final int QUANTITY_OF_STUDENTS = 200;
+    private static final int QUANTITY_OF_STUDENTS = 
+            Integer.parseInt(PropertiesUtil.get("quantity.of.students"));
     
     @Override
-    public List<Student> generate() throws IOException {
+    public List<Student> generate(){
         List<Student> students = new ArrayList<>(); 
         List<String> firstNames = readFile(FIRST_NAMES_PATH);
         List<String> lastNames = readFile(LAST_NAMES_PATH);
@@ -34,9 +37,11 @@ public class StudentsGeneration implements EntityGeneration<Student> {
         return students;
     }
     
-    private List<String> readFile(Path path) throws IOException {
+    private List<String> readFile(Path path) {
        try(Stream<String> stream = Files.lines(path)){
            return stream.collect(Collectors.toList());
+       } catch (IOException e) {
+           throw new DomainRuntimeException(e);
        }
     }
 }

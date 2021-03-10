@@ -62,6 +62,7 @@ public class StudentDao {
         return INSTANCE;
     }
     
+//    c. Add new student
     public Student save (Student student) {
         try(Connection connection = ConnectionManager.get();
                 PreparedStatement save = 
@@ -169,6 +170,7 @@ public class StudentDao {
         }
     }
 
+//    d. Delete student by STUDENT_ID
     public boolean deleteById (int id) {
         try (Connection connection = ConnectionManager.get();
                 PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
@@ -179,6 +181,7 @@ public class StudentDao {
         }
     }
     
+//    b. Find all students related to course with given name
     public List<Student> getAllByCourseName (String courseName) {
         List<Student> result = new ArrayList<>();
         try(Connection connection = ConnectionManager.get();

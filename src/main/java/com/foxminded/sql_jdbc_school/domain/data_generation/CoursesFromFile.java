@@ -6,15 +6,16 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.foxminded.sql_jdbc_school.domain.DomainRuntimeException;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 
-public class CoursesGeneration implements EntityGeneration<Course> {
+public class CoursesFromFile implements EntityGeneration<Course> {
     
     private static final Path COURSES_DATA_PATH = Path
                                 .of("src", "main", "resources", "Courses.txt");
 
     @Override
-    public List<Course> generate() throws IOException  {
+    public List<Course> generate() {
         String file = readFile();
         List<Course> courses = new ArrayList<>();
         String[] coursesData = file.split(";");
@@ -27,7 +28,11 @@ public class CoursesGeneration implements EntityGeneration<Course> {
         return courses;
     }
     
-    private String readFile() throws IOException {
-        return Files.readString(COURSES_DATA_PATH);   
+    private String readFile() {
+        try {
+            return Files.readString(COURSES_DATA_PATH);
+        } catch (IOException e) {
+            throw new DomainRuntimeException(e);
+        }   
     }
 }

@@ -7,18 +7,24 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentDao;
 import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentsCoursesDao;
-import com.foxminded.sql_jdbc_school.data.SchoolDto;
+import com.foxminded.sql_jdbc_school.dao.util.PropertiesUtil;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
+import com.foxminded.sql_jdbc_school.dto.SchoolDto;
 
-public class StudentsAssignment {
+public class RandomAssignment implements Assigment {
     
-    private static final int MIN_GROUP_SIZE = 10;
-    private static final int MAX_GROUP_SIZE = 30;
-    private static final int MIN_COURSE_QUANTITY = 1;
-    private static final int MAX_COURSE_QUANTITY = 3;
+    private static final int MIN_GROUP_SIZE =
+            Integer.parseInt(PropertiesUtil.get("min.group.size"));
+    private static final int MAX_GROUP_SIZE =
+            Integer.parseInt(PropertiesUtil.get("max.group.size"));
+    private static final int MIN_COURSE_QUANTITY =
+            Integer.parseInt(PropertiesUtil.get("min.course.quantity"));
+    private static final int MAX_COURSE_QUANTITY =
+            Integer.parseInt(PropertiesUtil.get("max.course.quantity"));
         
     public List<Student> assignGroups(SchoolDto dto) {
         List<Student> students = dto.getStudents();
@@ -26,13 +32,15 @@ public class StudentsAssignment {
         List<Group> groups = dto.getGroups();
         for(Group group : groups) {
             int groupId = group.getId();
-            for(int i = 0; i < retriveRandomQuantity(MIN_GROUP_SIZE, MAX_GROUP_SIZE + 1); i++) {
+            for(int i = 0; i < retriveRandomQuantity(MIN_GROUP_SIZE, MAX_GROUP_SIZE); i++) {
                 int index = retriveRandomIndex(studentsToDelete.size());
                 Student current = studentsToDelete.get(index);
                 current.setGroupId(groupId);
                 studentsToDelete.remove(index);
             }
-        }        
+        }  
+        StudentDao studentDao = StudentDao.getInstance();
+        studentDao.updateAll(students);
         return students;
     }
     
@@ -58,7 +66,7 @@ public class StudentsAssignment {
         for(Student student : students) {
             Set<Integer> courseIdToAssign = retriveIdsToAssign(courseId);
             StudentsCoursesDao studentsCoursesDao = StudentsCoursesDao.getInstance();
-            studentsCoursesDao.addStudentToCourses(student.getId(), courseIdToAssign);
+            studentsCoursesDao.addStudentToCourses(student, courseIdToAssign);
         }
     }
     

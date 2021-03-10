@@ -2,18 +2,18 @@ package com.foxminded.sql_jdbc_school.domain.data_generation;
 
 import java.util.List;
 
-import com.foxminded.sql_jdbc_school.data.SchoolDto;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
+import com.foxminded.sql_jdbc_school.dto.SchoolDto;
 
-public class SchoolEntitiesGeneration {
+public class EntitiesGeneration {
     
     private EntityGeneration<Student> studentsGeneration;
     private EntityGeneration<Course> coursesGeneration;
     private EntityGeneration<Group> groupsGeneration;
     
-    public SchoolEntitiesGeneration(EntityGeneration<Student> studentsGeneration,
+    public EntitiesGeneration(EntityGeneration<Student> studentsGeneration,
                                   EntityGeneration<Course> coursesGeneration,
                                   EntityGeneration<Group> groupsGeneration) {
         
@@ -22,13 +22,11 @@ public class SchoolEntitiesGeneration {
         this.groupsGeneration = groupsGeneration;
     }
 
-    public SchoolDto generate() throws Exception  {
+    public SchoolDto generate(){
         List<Student> students  = studentsGeneration.generate();
         List<Course> courses = coursesGeneration.generate();
         List<Group> groups = groupsGeneration.generate();
-        
-        
-        
+               
         return new SchoolDto.Builder()
                 .withCourses(courses)
                 .withGroups(groups)

@@ -1,4 +1,4 @@
-package com.foxminded.sql_jdbc_school.data;
+package com.foxminded.sql_jdbc_school.dto;
 
 import java.util.List;
 

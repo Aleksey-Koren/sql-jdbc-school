@@ -34,8 +34,8 @@ public class StudentsCoursesDao {
         return INSTANCE;
     }
     
-//    e. Add a student to the course (from a list)
-    public void addStudentToCourses(Integer studentId, Set<Integer> courseId) {
+//    e. Add a student to the course (from a list) 
+    public void addStudentToCourses(Student student, Set<Integer> courseId) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -43,7 +43,7 @@ public class StudentsCoursesDao {
             save = connection.prepareStatement(SAVE_SQL);
             connection.setAutoCommit(false);
             for(Integer id : courseId) {
-                save.setInt(1, studentId);
+                save.setInt(1, student.getId());
                 save.setInt(2, id);
                 save.executeUpdate();
             }      

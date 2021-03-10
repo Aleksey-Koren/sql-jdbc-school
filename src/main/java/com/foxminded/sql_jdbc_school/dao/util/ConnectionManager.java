@@ -3,6 +3,7 @@ package com.foxminded.sql_jdbc_school.dao.util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.foxminded.sql_jdbc_school.dao.PoolConnection;
@@ -10,17 +11,20 @@ import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
 
 public final class ConnectionManager {
     
-    private static final String URL_KEY = "db.url";
-    private static final String USERNAME_KEY = "db.username";
-    private static final String PASSWORD_KEY = "db.password";
-    private static final ArrayBlockingQueue<PoolConnection> POOL = new ArrayBlockingQueue<>(5);
+    private static final String URL = PropertiesUtil.get("db.url");
+    private static final String USERNAME = PropertiesUtil.get("db.username");
+    private static final String PASSWORD = PropertiesUtil.get("db.password");
+    private static final int CONNECTIONS_QUANTITY =
+            Integer.parseInt(PropertiesUtil.get("connections.quantity"));
+    
+    private static final ArrayBlockingQueue<PoolConnection> POOL = new ArrayBlockingQueue<>(CONNECTIONS_QUANTITY);
     
     private ConnectionManager() {
 
     }
     
     static {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < CONNECTIONS_QUANTITY; i++) {
             POOL.add(new PoolConnection(open()));
         }
     }
@@ -44,9 +48,7 @@ public final class ConnectionManager {
     private static Connection open(){
         Connection connection = null;
         try {            
-            connection = DriverManager.getConnection(PropertiesUtil.get(URL_KEY),
-                                              PropertiesUtil.get(USERNAME_KEY),
-                                              PropertiesUtil.get(PASSWORD_KEY));
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             return connection;
         } catch (SQLException e) {
             throw new DaoRuntimeException(e);

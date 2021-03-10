@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
@@ -28,6 +29,14 @@ public class GroupDao {
             (group_name)
             VALUES
             (?);
+            """;
+    
+    private static final String GET_ALL_BY_STUDENTS_QUANTITY = """
+            SELECT  g.id, g.group_name, count(s.id) student_id
+            FROM "groups" g 
+                JOIN students s ON g.id = s.group_id
+            GROUP BY g.id
+            HAVING count(s.id) <= ?;
             """;
     
     public List<Group> saveAll(List<Group> groups) {
@@ -71,5 +80,22 @@ public class GroupDao {
                 throw new DaoRuntimeException(e);
             }         
         }
+    }
+    
+//    a. Find all groups with less or equals student count
+    public List<Group> getAllByStudentsQuantity(int quantity) {
+        List<Group> result = new ArrayList<>();
+        try (Connection connection = ConnectionManager.get();
+             PreparedStatement get = connection.prepareStatement(GET_ALL_BY_STUDENTS_QUANTITY)){
+            get.setInt(1, quantity);
+            ResultSet resultSet = get.executeQuery();
+            while(resultSet.next()) {
+                result.add(new Group(resultSet.getInt("id"),
+                                     resultSet.getString("group_name")));
+            }       
+        }catch(SQLException e) {
+            throw new DaoRuntimeException(e);
+        }        
+        return result;
     }
 }
