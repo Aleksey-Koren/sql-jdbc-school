@@ -1,7 +1,8 @@
 package com.foxminded.sql_jdbc_school.domain;
 
+import java.sql.SQLException;
+
 import com.foxminded.sql_jdbc_school.dao.TablesCreation;
-import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentDao;
 import com.foxminded.sql_jdbc_school.domain.data_generation.CoursesFromFile;
 import com.foxminded.sql_jdbc_school.domain.data_generation.DataProvider;
 import com.foxminded.sql_jdbc_school.domain.data_generation.EntitiesGeneration;
@@ -12,7 +13,7 @@ import com.foxminded.sql_jdbc_school.domain.data_generation.RandomAssignment;
 
 public class ApplicationRunner {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         TablesCreation tablesCreator = new TablesCreation();
         tablesCreator.create();
        

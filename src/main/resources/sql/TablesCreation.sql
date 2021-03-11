@@ -13,7 +13,7 @@ CREATE TABLE "groups"
 CREATE TABLE students
 (
     id SERIAL PRIMARY KEY,
-    group_id INT REFERENCES "groups"(id),
+    group_id INT REFERENCES "groups"(id) ON DELETE SET NULL,
     first_name VARCHAR(32) NOT NULL,
     last_name VARCHAR(32) NOT NULL
 );
@@ -29,6 +29,6 @@ CREATE TABLE courses
 CREATE TABLE students_courses
 (
     student_id INT REFERENCES students(id),
-    course_id INT REFERENCES courses(id),
+    course_id INT REFERENCES courses(id) ON DELETE CASCADE,
     UNIQUE (student_id, course_id)
 );

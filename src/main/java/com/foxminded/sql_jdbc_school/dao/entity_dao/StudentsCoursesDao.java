@@ -35,7 +35,7 @@ public class StudentsCoursesDao {
     }
    
 //    e. Add a student to the course (from a list) 
-    public void addStudentToCourses(Student student, Set<Integer> courseId) {
+    public void addStudentToCourses(Student student, Set<Integer> courseId) throws SQLException {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -51,24 +51,16 @@ public class StudentsCoursesDao {
             connection.setAutoCommit(true);
         }catch(Exception e) {
             if(connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException e1) {
-                    throw new DaoRuntimeException(e1);
-                }
+                connection.rollback();
             }
             throw new DaoRuntimeException(e);
         }finally {
-            try {
-                if(save != null) {
-                    save.close();
-                }
-                if(connection != null) {
-                    connection.close();
-                }       
-            }catch(SQLException e) {
-                throw new DaoRuntimeException(e);
-            }      
+            if(save != null) {
+                save.close();
+            }
+            if(connection != null) {
+                connection.close();
+            }            
         }
     }
     

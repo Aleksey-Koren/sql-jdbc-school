@@ -9,18 +9,19 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class StudentDao {
+public class StudentDao implements GenericDao<Student> {
     
     private static final StudentDao INSTANCE = new StudentDao();
    
     private static final String SAVE_SQL = """
             INSERT INTO students 
-            (group_id, first_name, last_name)
+            (group_id,first_name, last_name)
             VALUES
             (?, ?, ?);
             """;
@@ -37,12 +38,20 @@ public class StudentDao {
             WHERE id = ?;
             """;
     
+    private static final String GET_BY_ID = """
+            SELECT id,
+                   group_id,
+                   first_name,
+                   last_name
+            FROM students
+            WHERE id = ?;
+            """;
+    
     private static final String GET_ALL_BY_COURSE_NAME = """
             SELECT students.id,
                    students.group_id,
                    students.first_name,
-                   students.last_name,
-                   students.course_name
+                   students.last_name, 
             FROM (SELECT s.id,
                          s.group_id,
                          s.first_name,
@@ -62,7 +71,7 @@ public class StudentDao {
         return INSTANCE;
     }
     
-//    c. Add new student
+    @Override
     public Student save (Student student) {
         try(Connection connection = ConnectionManager.get();
                 PreparedStatement save = 
@@ -81,7 +90,46 @@ public class StudentDao {
         }
     }
     
-    public List<Student> saveAll(List<Student> students) {
+    @Override
+    public void update(Student student) {
+        try(Connection connection = ConnectionManager.get();
+                PreparedStatement update = 
+                        connection.prepareStatement(UPDATE_SQL)) {
+                update.setObject(1, student.getGroupId());
+                update.setString(2, student.getFirstName());
+                update.setString(3, student.getLastName());
+                update.setInt(4, student.getId());
+                update.executeUpdate();
+        }catch (SQLException e){
+            throw new DaoRuntimeException(e);
+        }
+        
+    }
+    
+    @Override
+    public Optional<Student> getById(int id) {
+        try(Connection connection = ConnectionManager.get();
+            PreparedStatement get = connection.prepareStatement(GET_BY_ID)){
+            get.setInt(1, id);
+            ResultSet resultSet = get.executeQuery();
+            return resultSet.next() ?
+                    Optional.of(createFromResultSet(resultSet)) : Optional.empty();
+        } catch (SQLException e) {
+            throw new DaoRuntimeException(e);
+        }
+    }
+    
+  public boolean deleteById (int id) {
+      try (Connection connection = ConnectionManager.get();
+              PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
+          delete.setInt(1, id);
+          return delete.executeUpdate() > 0;
+      }catch(SQLException e) {
+          throw new DaoRuntimeException(e);
+      }
+  }
+    
+    public List<Student> saveAll(List<Student> students) throws SQLException {
         Connection connection = null;
         PreparedStatement save = null;
         try{
@@ -104,28 +152,20 @@ public class StudentDao {
             return students;
         } catch (Exception e) {
             if(connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException e1) {
-                    throw new DaoRuntimeException(e1);
-                }
+                connection.rollback();
             }
-            throw new DaoRuntimeException(e);       
+            throw new DaoRuntimeException(e);
         } finally {
-            try {
-                if(save != null) {
-                    save.close();
-                }
-                if(connection != null) {
-                    connection.close();
-                }
-            }catch(SQLException e) {
-                throw new DaoRuntimeException(e);
-            }            
+            if(save != null) {
+                save.close();
+            }
+            if(connection != null) {
+                connection.close(); 
+            }        
         }
     }
     
-    public void updateAll(List<Student> students){
+    public void updateAll(List<Student> students) throws SQLException{
         Connection connection = null;
         PreparedStatement update = null;
         try {
@@ -145,39 +185,19 @@ public class StudentDao {
             connection.setAutoCommit(true);          
         }catch(Exception e){
             if(connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException e1) {
-                    throw new DaoRuntimeException(e1);
-                }
-            }         
+                connection.rollback();
+                }         
             throw new DaoRuntimeException(e);           
         }finally {
-            try {
-                if(update != null) {
-                    update.close();              
-                }
-                if(connection != null) {
-                    connection.close();   
-                }
-            }catch(SQLException e) {
-                throw new DaoRuntimeException(e);
-            }           
-        }
-    }
-
-//    d. Delete student by STUDENT_ID
-    public boolean deleteById (int id) {
-        try (Connection connection = ConnectionManager.get();
-                PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
-            delete.setInt(1, id);
-            return delete.executeUpdate() > 0;
-        }catch(SQLException e) {
-            throw new DaoRuntimeException(e);
+            if(update != null) {
+                update.close();              
+            }
+            if(connection != null) {
+                connection.close();   
+            }         
         }
     }
     
-//    b. Find all students related to course with given name
     public List<Student> getAllByCourseName (String courseName) {
         List<Student> result = new ArrayList<>();
         try(Connection connection = ConnectionManager.get();
@@ -185,31 +205,18 @@ public class StudentDao {
             get.setString(1, courseName);
             ResultSet resultSet = get.executeQuery();
             while(resultSet.next()) {
-                result.add(new Student(resultSet.getInt("id"),
-                                       resultSet.getObject("group_id", Integer.class),
-                                       resultSet.getString("first_name"),
-                                       resultSet.getString("last_name")));
+                result.add(createFromResultSet(resultSet));
             }
             }catch (SQLException e) {
             throw new DaoRuntimeException(e);
         }
         return result;
     }
+    
+    private Student createFromResultSet(ResultSet resultSet) throws SQLException {
+        return new Student(resultSet.getInt("id"),
+                resultSet.getObject("group_id", Integer.class),
+                resultSet.getString("first_name"),
+                resultSet.getString("last_name"));
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

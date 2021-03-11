@@ -10,6 +10,12 @@ public class Course {
         this.name = name;
         this.description = description;
     }
+    
+    public Course(Integer id, String name, String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
 
     public Integer getId() {
         return id;
@@ -34,4 +40,11 @@ public class Course {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        return "Course [id=" + id + ", name=" + name + ", description=" + description + "]";
+    }
+    
+    
 }
