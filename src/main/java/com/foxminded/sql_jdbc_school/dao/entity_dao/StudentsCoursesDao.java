@@ -13,11 +13,7 @@ import com.foxminded.sql_jdbc_school.domain.entity.Student;
 public class StudentsCoursesDao {
 
     private static final StudentsCoursesDao INSTANCE = new StudentsCoursesDao();
-    
-    private StudentsCoursesDao() {
         
-    }
-    
     private static final String SAVE_SQL = """
             INSERT INTO students_courses
             (student_id, course_id)
@@ -30,10 +26,14 @@ public class StudentsCoursesDao {
             AND course_id = ?;
             """;
     
+   private StudentsCoursesDao() {
+        
+    }
+    
     public static StudentsCoursesDao getInstance() {
         return INSTANCE;
     }
-    
+   
 //    e. Add a student to the course (from a list) 
     public void addStudentToCourses(Student student, Set<Integer> courseId) {
         Connection connection = null;
@@ -48,6 +48,7 @@ public class StudentsCoursesDao {
                 save.executeUpdate();
             }      
             connection.commit();
+            connection.setAutoCommit(true);
         }catch(Exception e) {
             if(connection != null) {
                 try {

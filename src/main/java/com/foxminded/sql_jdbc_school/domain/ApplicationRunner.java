@@ -1,6 +1,7 @@
 package com.foxminded.sql_jdbc_school.domain;
 
 import com.foxminded.sql_jdbc_school.dao.TablesCreation;
+import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentDao;
 import com.foxminded.sql_jdbc_school.domain.data_generation.CoursesFromFile;
 import com.foxminded.sql_jdbc_school.domain.data_generation.DataProvider;
 import com.foxminded.sql_jdbc_school.domain.data_generation.EntitiesGeneration;

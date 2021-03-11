@@ -14,6 +14,13 @@ import com.foxminded.sql_jdbc_school.domain.entity.Course;
 public class CourseDao {
     
     private static final CourseDao INSTANCE = new CourseDao();
+           
+    private static final String SAVE_SQL = """
+            INSERT INTO courses
+            (course_name, course_description)
+            VALUES
+            (?, ?);
+            """;
     
     private CourseDao() {
         
@@ -22,13 +29,6 @@ public class CourseDao {
     public static CourseDao getInstance() {
         return INSTANCE;
     }
-    
-    private static final String SAVE_SQL = """
-            INSERT INTO courses
-            (course_name, course_description)
-            VALUES
-            (?, ?);
-            """;
     
     public List<Course> saveAll(List<Course> courses) {
         Connection connection = null;

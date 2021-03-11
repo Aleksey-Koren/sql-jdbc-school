@@ -14,16 +14,8 @@ import com.foxminded.sql_jdbc_school.domain.entity.Group;
 
 public class GroupDao {
     
-    private static final GroupDao INSTANCE = new GroupDao(); 
-
-    private GroupDao() {
-        
-    }
-    
-    public static GroupDao getInstance() {
-        return INSTANCE;
-    }
-    
+    private static final GroupDao INSTANCE = new GroupDao();
+ 
     private static final String SAVE_SQL = """
             INSERT INTO groups
             (group_name)
@@ -38,6 +30,14 @@ public class GroupDao {
             GROUP BY g.id
             HAVING count(s.id) <= ?;
             """;
+    
+    private GroupDao() {
+        
+    }
+    
+    public static GroupDao getInstance() {
+        return INSTANCE;
+    }
     
     public List<Group> saveAll(List<Group> groups) {
         Connection connection = null;
