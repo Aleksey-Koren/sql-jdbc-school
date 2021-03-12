@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
+import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class GroupDao implements GenericDao<Group> {
+public class GroupDao implements EntityDao<Group, Integer> {
     
     private static final GroupDao INSTANCE = new GroupDao();
  
@@ -68,7 +68,7 @@ public class GroupDao implements GenericDao<Group> {
                 }
                 return group;
         }catch (SQLException e){
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
 
@@ -81,12 +81,12 @@ public class GroupDao implements GenericDao<Group> {
                 update.setInt(2, group.getId());
                 update.executeUpdate();
         }catch (SQLException e){
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }        
     }
     
     @Override
-    public Optional<Group> getById(int id) {
+    public Optional<Group> getById(Integer id) {
         try(Connection connection = ConnectionManager.get();
             PreparedStatement get = connection.prepareStatement(GET_BY_ID)){
             get.setInt(1, id);
@@ -94,18 +94,18 @@ public class GroupDao implements GenericDao<Group> {
             return resultSet.next() ?
                     Optional.of(createFromResultSet(resultSet)) : Optional.empty();
         } catch (SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
     
     @Override
-    public boolean deleteById(int id) {
+    public boolean deleteById(Integer id) {
         try (Connection connection = ConnectionManager.get();
                 PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
             delete.setInt(1, id);
             return delete.executeUpdate() > 0;
         }catch(SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
 
@@ -128,11 +128,11 @@ public class GroupDao implements GenericDao<Group> {
             connection.commit();
             connection.setAutoCommit(true);
             return groups;
-        }catch (Exception e){
+        }catch (SQLException e){
             if(connection != null) {
                 connection.rollback();
             }        
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }finally {
             if(save != null) {
                 save.close();
@@ -141,6 +141,38 @@ public class GroupDao implements GenericDao<Group> {
                 connection.close();
             }      
         }
+    }
+    
+    @Override
+    public void updateAll(List<Group> groups) throws SQLException {
+        Connection connection = null;
+        PreparedStatement update = null;
+        try {
+            connection = ConnectionManager.get();
+            update = connection.prepareStatement(UPDATE_SQL);
+            connection.setAutoCommit(false);
+            
+            for(Group group : groups) {
+                update.setString(1, group.getName());
+                update.setInt(2, group.getId());
+                update.executeUpdate();
+            }       
+            
+            connection.commit();
+            connection.setAutoCommit(true);          
+        }catch(SQLException e){
+            if(connection != null) {
+                connection.rollback();
+                }         
+            throw new DAOException(e);           
+        }finally {
+            if(update != null) {
+                update.close();              
+            }
+            if(connection != null) {
+                connection.close();   
+            }         
+        }    
     }
     
     public List<Group> getAllByStudentsQuantity(int quantity) {
@@ -154,7 +186,7 @@ public class GroupDao implements GenericDao<Group> {
                                      resultSet.getString("group_name")));
             }       
         }catch(SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }        
         return result;
     }

@@ -7,7 +7,7 @@ import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.foxminded.sql_jdbc_school.dao.PoolConnection;
-import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
+import com.foxminded.sql_jdbc_school.dao.DAOException;
 
 public final class ConnectionManager {
     
@@ -33,7 +33,7 @@ public final class ConnectionManager {
         try {
             return POOL.take();
         } catch (InterruptedException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
     
@@ -41,7 +41,7 @@ public final class ConnectionManager {
         try {
             POOL.put(connection);
         } catch (InterruptedException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
     
@@ -51,7 +51,7 @@ public final class ConnectionManager {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             return connection;
         } catch (SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         } 
     }
 }

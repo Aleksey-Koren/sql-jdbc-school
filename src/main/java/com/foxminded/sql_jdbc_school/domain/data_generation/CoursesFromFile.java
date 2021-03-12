@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.foxminded.sql_jdbc_school.domain.DomainRuntimeException;
+import com.foxminded.sql_jdbc_school.domain.DomainException;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 
 public class CoursesFromFile implements EntityGeneration<Course> {
@@ -32,7 +32,7 @@ public class CoursesFromFile implements EntityGeneration<Course> {
         try {
             return Files.readString(COURSES_DATA_PATH);
         } catch (IOException e) {
-            throw new DomainRuntimeException(e);
+            throw new DomainException(e);
         }   
     }
 }

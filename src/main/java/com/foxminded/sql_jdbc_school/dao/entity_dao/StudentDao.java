@@ -4,18 +4,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLType;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
+import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class StudentDao implements GenericDao<Student> {
+public class StudentDao implements EntityDao<Student, Integer> {
     
     private static final StudentDao INSTANCE = new StudentDao();
    
@@ -86,7 +84,7 @@ public class StudentDao implements GenericDao<Student> {
                 }
                 return student;
         }catch (SQLException e){
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
     
@@ -101,13 +99,13 @@ public class StudentDao implements GenericDao<Student> {
                 update.setInt(4, student.getId());
                 update.executeUpdate();
         }catch (SQLException e){
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
         
     }
     
     @Override
-    public Optional<Student> getById(int id) {
+    public Optional<Student> getById(Integer id) {
         try(Connection connection = ConnectionManager.get();
             PreparedStatement get = connection.prepareStatement(GET_BY_ID)){
             get.setInt(1, id);
@@ -115,17 +113,17 @@ public class StudentDao implements GenericDao<Student> {
             return resultSet.next() ?
                     Optional.of(createFromResultSet(resultSet)) : Optional.empty();
         } catch (SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
-    
-  public boolean deleteById (int id) {
+  @Override  
+  public boolean deleteById (Integer id) {
       try (Connection connection = ConnectionManager.get();
               PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
           delete.setInt(1, id);
           return delete.executeUpdate() > 0;
       }catch(SQLException e) {
-          throw new DaoRuntimeException(e);
+          throw new DAOException(e);
       }
   }
     
@@ -150,11 +148,11 @@ public class StudentDao implements GenericDao<Student> {
             connection.commit();
             connection.setAutoCommit(true);
             return students;
-        } catch (Exception e) {
+        }catch (SQLException e) {
             if(connection != null) {
                 connection.rollback();
             }
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         } finally {
             if(save != null) {
                 save.close();
@@ -183,11 +181,11 @@ public class StudentDao implements GenericDao<Student> {
             
             connection.commit();
             connection.setAutoCommit(true);          
-        }catch(Exception e){
+        }catch(SQLException e){
             if(connection != null) {
                 connection.rollback();
                 }         
-            throw new DaoRuntimeException(e);           
+            throw new DAOException(e);           
         }finally {
             if(update != null) {
                 update.close();              
@@ -208,7 +206,7 @@ public class StudentDao implements GenericDao<Student> {
                 result.add(createFromResultSet(resultSet));
             }
             }catch (SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
         return result;
     }

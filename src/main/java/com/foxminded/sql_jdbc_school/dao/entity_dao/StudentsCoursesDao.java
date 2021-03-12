@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
+import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
@@ -53,7 +53,7 @@ public class StudentsCoursesDao {
             if(connection != null) {
                 connection.rollback();
             }
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }finally {
             if(save != null) {
                 save.close();
@@ -62,9 +62,7 @@ public class StudentsCoursesDao {
                 connection.close();
             }            
         }
-    }
-    
-//    f. Remove the student from one of his or her courses
+    }   
     public boolean deleteStudentFromCourse(int studentId, int courseId ) {
         try (Connection connection = ConnectionManager.get();
                 PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
@@ -72,7 +70,7 @@ public class StudentsCoursesDao {
             delete.setInt(2, courseId);
             return delete.executeUpdate() > 0;
         }catch(SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
 }

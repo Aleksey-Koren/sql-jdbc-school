@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.foxminded.sql_jdbc_school.dao.util.PropertiesUtil;
-import com.foxminded.sql_jdbc_school.domain.DomainRuntimeException;
+import com.foxminded.sql_jdbc_school.domain.DomainException;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
 public class RandomStudents implements EntityGeneration<Student> {
@@ -41,7 +41,7 @@ public class RandomStudents implements EntityGeneration<Student> {
        try(Stream<String> stream = Files.lines(path)){
            return stream.collect(Collectors.toList());
        } catch (IOException e) {
-           throw new DomainRuntimeException(e);
+           throw new DomainException(e);
        }
     }
 }

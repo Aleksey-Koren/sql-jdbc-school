@@ -8,12 +8,13 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
-import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
+import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
+import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class CourseDao implements GenericDao<Course> {
+public class CourseDao implements EntityDao<Course, Integer> {
     
     private static final CourseDao INSTANCE = new CourseDao();
            
@@ -64,7 +65,7 @@ public class CourseDao implements GenericDao<Course> {
                 }
                 return course;
         }catch (SQLException e){
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
 
@@ -78,23 +79,23 @@ public class CourseDao implements GenericDao<Course> {
                 update.setInt(3, course.getId());         
                 update.executeUpdate();
         }catch (SQLException e){
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         } 
     }
 
     @Override
-    public boolean deleteById(int id) {
+    public boolean deleteById(Integer id) {
         try (Connection connection = ConnectionManager.get();
                 PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
             delete.setInt(1, id);
             return delete.executeUpdate() > 0;
         }catch(SQLException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
 
     @Override
-    public Optional<Course> getById(int id) {
+    public Optional<Course> getById(Integer id) {
         try(Connection connection = ConnectionManager.get();
                 PreparedStatement get = connection.prepareStatement(GET_BY_ID)){
                 get.setInt(1, id);
@@ -102,7 +103,7 @@ public class CourseDao implements GenericDao<Course> {
                 return resultSet.next() ?
                         Optional.of(createFromResultSet(resultSet)) : Optional.empty();
             } catch (SQLException e) {
-                throw new DaoRuntimeException(e);
+                throw new DAOException(e);
             }
     }
     
@@ -126,11 +127,11 @@ public class CourseDao implements GenericDao<Course> {
             connection.commit();
             connection.setAutoCommit(true);
             return courses;
-        }catch (Exception e){
+        }catch (SQLException e){
             if(connection != null) {
                 connection.rollback();
             }     
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }finally {
             if(save != null) {
                 save.close();
@@ -140,10 +141,45 @@ public class CourseDao implements GenericDao<Course> {
             }    
         }
     }
+    
+    @Override
+    public void updateAll(List<Course> courses) throws SQLException {
+        Connection connection = null;
+        PreparedStatement update = null;
+        try {
+            connection = ConnectionManager.get();
+            update = connection.prepareStatement(UPDATE_SQL);
+            connection.setAutoCommit(false);
+            
+            for(Course course : courses) {
+                update.setString(1, course.getName());
+                update.setString(2, course.getDescription());
+                update.setInt(3, course.getId());
+                update.executeUpdate();
+            }       
+            
+            connection.commit();
+            connection.setAutoCommit(true);          
+        }catch(SQLException e){
+            if(connection != null) {
+                connection.rollback();
+                }         
+            throw new DAOException(e);           
+        }finally {
+            if(update != null) {
+                update.close();              
+            }
+            if(connection != null) {
+                connection.close();   
+            }         
+        }
+    }
 
     private Course createFromResultSet(ResultSet resultSet) throws SQLException {
         return new Course(resultSet.getInt("id"),
                           resultSet.getString("course_name"),
                           resultSet.getString("course_description"));
     }
+
+
 }

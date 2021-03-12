@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.foxminded.sql_jdbc_school.dao.DaoRuntimeException;
+import com.foxminded.sql_jdbc_school.dao.DAOException;
 
 
 public final class PropertiesUtil {
@@ -27,11 +27,11 @@ public final class PropertiesUtil {
         try(InputStream stream = PropertiesUtil.class.getClassLoader()
                 .getResourceAsStream("application.properties")){
             if(stream == null) {
-                throw new DaoRuntimeException("properties file is not readed");
+                throw new DAOException("properties file is not readed");
             }
             PROPERTIES.load(stream);
         } catch (IOException e) {
-            throw new DaoRuntimeException(e);
+            throw new DAOException(e);
         }
     }
 }

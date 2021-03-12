@@ -20,7 +20,7 @@ public class TablesCreation {
             PreparedStatement createTables = connection.prepareStatement(getScript(TABLE_CREATION))) {
             createTables.executeUpdate();
         } catch (SQLException e) {
-            throw new DaoRuntimeException("Exception in tables creation", e);
+            throw new DAOException("Exception in tables creation", e);
         }
     }
     
@@ -28,7 +28,7 @@ public class TablesCreation {
         try(Stream<String> lines = Files.lines(path)) {
             return lines.reduce("", (a,b) -> a + b);
         } catch (IOException e) {
-            throw new DaoRuntimeException("Can't read sql script", e);
+            throw new DAOException("Can't read sql script", e);
         } 
     }
 }
