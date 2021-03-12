@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentDao;
-import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentsCoursesDao;
 import com.foxminded.sql_jdbc_school.dao.util.PropertiesUtil;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
@@ -66,8 +65,8 @@ public class RandomAssignment implements Assigment {
     private void assignRandomCourses(List<Student> students, List<Integer> courseId) throws SQLException {
         for(Student student : students) {
             Set<Integer> courseIdToAssign = retriveIdsToAssign(courseId);
-            StudentsCoursesDao studentsCoursesDao = StudentsCoursesDao.getInstance();
-            studentsCoursesDao.addStudentToCourses(student, courseIdToAssign);
+            StudentDao studentDao = StudentDao.getInstance();
+            studentDao.addStudentToCourses(student, courseIdToAssign);
         }
     }
     

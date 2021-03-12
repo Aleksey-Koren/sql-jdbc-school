@@ -9,7 +9,7 @@ import java.util.List;
 import com.foxminded.sql_jdbc_school.domain.DomainException;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 
-public class CoursesFromFile implements EntityGeneration<Course> {
+public class CourseGenerator implements EntityGeneration<Course> {
     
     private static final Path COURSES_DATA_PATH = Path
                                 .of("src", "main", "resources", "Courses.txt");

@@ -13,7 +13,7 @@ import com.foxminded.sql_jdbc_school.dao.util.PropertiesUtil;
 import com.foxminded.sql_jdbc_school.domain.DomainException;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class RandomStudents implements EntityGeneration<Student> {
+public class RandomStudentsGenerator implements EntityGeneration<Student> {
     
     private static final Path FIRST_NAMES_PATH = Path
                             .of("src", "main", "resources", "First_names.txt");

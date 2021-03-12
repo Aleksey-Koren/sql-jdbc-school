@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
@@ -59,6 +60,18 @@ public class StudentDao implements EntityDao<Student, Integer> {
                       JOIN students_courses sc ON s.id = sc.student_id
                           JOIN courses c ON sc.course_id = c.id) students
             WHERE students.course_name = ?;
+            """;
+    
+    private static final String LINK_STUDENT_COURSE = """
+            INSERT INTO students_courses
+            (student_id, course_id)
+            VALUES
+            (?, ?);
+            """;
+    private static final String UNLINK_STUDENT_COURSE = """
+            DELETE FROM students_courses
+            WHERE student_id = ?
+            AND course_id = ?;
             """;
     
     private StudentDao() {
@@ -209,6 +222,46 @@ public class StudentDao implements EntityDao<Student, Integer> {
             throw new DAOException(e);
         }
         return result;
+    }
+    
+    public void addStudentToCourses(Student student, Set<Integer> courseId) throws SQLException {
+        Connection connection = null;
+        PreparedStatement save = null;
+        try {
+            connection = ConnectionManager.get();
+            save = connection.prepareStatement(LINK_STUDENT_COURSE);
+            connection.setAutoCommit(false);
+            for(Integer id : courseId) {
+                save.setInt(1, student.getId());
+                save.setInt(2, id);
+                save.executeUpdate();
+            }      
+            connection.commit();
+            connection.setAutoCommit(true);
+        }catch(Exception e) {
+            if(connection != null) {
+                connection.rollback();
+            }
+            throw new DAOException(e);
+        }finally {
+            if(save != null) {
+                save.close();
+            }
+            if(connection != null) {
+                connection.close();
+            }            
+        }
+    }
+    
+    public boolean deleteStudentFromCourse(int studentId, int courseId) {
+        try (Connection connection = ConnectionManager.get();
+                PreparedStatement delete = connection.prepareStatement(UNLINK_STUDENT_COURSE)){
+            delete.setInt(1, studentId);
+            delete.setInt(2, courseId);
+            return delete.executeUpdate() > 0;
+        }catch(SQLException e) {
+            throw new DAOException(e);
+        }
     }
     
     private Student createFromResultSet(ResultSet resultSet) throws SQLException {

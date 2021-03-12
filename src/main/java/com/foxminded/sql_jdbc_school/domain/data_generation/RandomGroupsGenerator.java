@@ -8,7 +8,7 @@ import java.util.Set;
 
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 
-public class RandomGroups implements EntityGeneration<Group> {
+public class RandomGroupsGenerator implements EntityGeneration<Group> {
     
     private static final String HYPHEN = "-";
     private static final int QUANTITY_OF_GROUPS = 10;
