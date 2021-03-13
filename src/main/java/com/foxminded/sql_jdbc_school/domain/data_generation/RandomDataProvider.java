@@ -1,6 +1,5 @@
 package com.foxminded.sql_jdbc_school.domain.data_generation;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import com.foxminded.sql_jdbc_school.dao.entity_dao.CourseDao;
@@ -33,7 +32,7 @@ public RandomDataProvider(EntityGeneration<Student> studentsGeneration,
         this.assignment = assignment;
     }
 
-    public void provide() throws SQLException { 
+    public void provide() { 
         List<Student> students  = studentsGeneration.generate();
         List<Course> courses = coursesGeneration.generate();
         List<Group> groups = groupsGeneration.generate();

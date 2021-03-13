@@ -11,10 +11,8 @@ import java.util.Optional;
 import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
-import com.foxminded.sql_jdbc_school.domain.entity.Group;
-import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class CourseDao implements EntityDao<Course, Integer> {
+public class CourseDao extends EntityDao<Course, Integer> {
     
     private static final CourseDao INSTANCE = new CourseDao();
            
@@ -107,7 +105,8 @@ public class CourseDao implements EntityDao<Course, Integer> {
             }
     }
     
-    public List<Course> saveAll(List<Course> courses) throws SQLException {
+    @Override
+    public List<Course> saveAll(List<Course> courses) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -127,23 +126,23 @@ public class CourseDao implements EntityDao<Course, Integer> {
             connection.commit();
             connection.setAutoCommit(true);
             return courses;
-        }catch (SQLException e){
+        }catch (Exception e) {
             if(connection != null) {
-                connection.rollback();
-            }     
+                processRollback(connection);
+            }
             throw new DAOException(e);
-        }finally {
+        } finally {
             if(save != null) {
-                save.close();
+                processClose(save);
             }
             if(connection != null) {
-                connection.close();
-            }    
+                processClose(connection); 
+            }        
         }
     }
     
     @Override
-    public void updateAll(List<Course> courses) throws SQLException {
+    public void updateAll(List<Course> courses) {
         Connection connection = null;
         PreparedStatement update = null;
         try {
@@ -160,17 +159,17 @@ public class CourseDao implements EntityDao<Course, Integer> {
             
             connection.commit();
             connection.setAutoCommit(true);          
-        }catch(SQLException e){
+        }catch(Exception e){
             if(connection != null) {
-                connection.rollback();
+                processRollback(connection);
                 }         
             throw new DAOException(e);           
         }finally {
             if(update != null) {
-                update.close();              
+                processClose(update);
             }
             if(connection != null) {
-                connection.close();   
+                processClose(connection); 
             }         
         }
     }
@@ -180,6 +179,4 @@ public class CourseDao implements EntityDao<Course, Integer> {
                           resultSet.getString("course_name"),
                           resultSet.getString("course_description"));
     }
-
-
 }

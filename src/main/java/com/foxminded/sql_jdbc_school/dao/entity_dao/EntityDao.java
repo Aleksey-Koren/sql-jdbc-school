@@ -1,20 +1,39 @@
 package com.foxminded.sql_jdbc_school.dao.entity_dao;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public interface EntityDao <T, ID> {
+import com.foxminded.sql_jdbc_school.dao.DAOException;
+
+public abstract class EntityDao <T, D> {
     
-    T save(T entity);
+    public abstract T save(T entity);
     
-    void update(T entity);
+    public abstract void update(T entity);
     
-    boolean deleteById(ID id);
+    public abstract boolean deleteById(D id);
     
-    Optional <T> getById(ID id);
+    public abstract Optional <T> getById(D id);
     
-    List<T> saveAll(List<T> entities) throws SQLException;
+    public abstract List<T> saveAll(List<T> entities);
     
-    void updateAll(List<T> entities) throws SQLException;
+    public abstract void updateAll(List<T> entities);
+    
+    protected void processRollback(Connection connection) {
+        try {
+            connection.rollback();
+        }catch(SQLException e) {
+            throw new DAOException(e);
+        }
+    }
+    
+    protected void processClose (AutoCloseable closeable) {
+        try {
+            closeable.close();
+        } catch (Exception e) {
+            throw new DAOException(e);
+        }
+    }
 }

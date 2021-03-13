@@ -14,7 +14,7 @@ import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class StudentDao implements EntityDao<Student, Integer> {
+public class StudentDao extends EntityDao<Student, Integer> {
     
     private static final StudentDao INSTANCE = new StudentDao();
    
@@ -139,8 +139,8 @@ public class StudentDao implements EntityDao<Student, Integer> {
           throw new DAOException(e);
       }
   }
-    
-    public List<Student> saveAll(List<Student> students) throws SQLException {
+    @Override
+    public List<Student> saveAll(List<Student> students) {
         Connection connection = null;
         PreparedStatement save = null;
         try{
@@ -161,22 +161,22 @@ public class StudentDao implements EntityDao<Student, Integer> {
             connection.commit();
             connection.setAutoCommit(true);
             return students;
-        }catch (SQLException e) {
+        }catch (Exception e) {
             if(connection != null) {
-                connection.rollback();
+                processRollback(connection);
             }
             throw new DAOException(e);
         } finally {
             if(save != null) {
-                save.close();
+                processClose(save);
             }
             if(connection != null) {
-                connection.close(); 
+                processClose(connection); 
             }        
         }
     }
-    
-    public void updateAll(List<Student> students) throws SQLException{
+    @Override
+    public void updateAll(List<Student> students) {
         Connection connection = null;
         PreparedStatement update = null;
         try {
@@ -194,17 +194,17 @@ public class StudentDao implements EntityDao<Student, Integer> {
             
             connection.commit();
             connection.setAutoCommit(true);          
-        }catch(SQLException e){
+        }catch(Exception e){
             if(connection != null) {
-                connection.rollback();
+                processRollback(connection);
                 }         
             throw new DAOException(e);           
         }finally {
             if(update != null) {
-                update.close();              
+                processClose(update);
             }
             if(connection != null) {
-                connection.close();   
+                processClose(connection); 
             }         
         }
     }
@@ -224,7 +224,7 @@ public class StudentDao implements EntityDao<Student, Integer> {
         return result;
     }
     
-    public void addStudentToCourses(Student student, Set<Integer> courseId) throws SQLException {
+    public void addStudentToCourses(Student student, Set<Integer> courseId) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -240,16 +240,16 @@ public class StudentDao implements EntityDao<Student, Integer> {
             connection.setAutoCommit(true);
         }catch(Exception e) {
             if(connection != null) {
-                connection.rollback();
+                processRollback(connection);
             }
             throw new DAOException(e);
         }finally {
             if(save != null) {
-                save.close();
+                processClose(save);
             }
             if(connection != null) {
-                connection.close();
-            }            
+                processClose(connection); 
+            }              
         }
     }
     
@@ -270,4 +270,20 @@ public class StudentDao implements EntityDao<Student, Integer> {
                 resultSet.getString("first_name"),
                 resultSet.getString("last_name"));
     }
+    
+//    private void processRollback(Connection connection) {
+//        try {
+//            connection.rollback();
+//        }catch(SQLException e) {
+//            throw new DAOException(e);
+//        }
+//    }
+//    
+//    private void processClose (AutoCloseable closeable) {
+//        try {
+//            closeable.close();
+//        } catch (Exception e) {
+//            throw new DAOException(e);
+//        }
+//    }
 }

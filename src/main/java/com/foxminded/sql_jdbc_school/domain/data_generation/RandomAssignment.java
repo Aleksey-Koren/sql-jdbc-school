@@ -1,6 +1,5 @@
 package com.foxminded.sql_jdbc_school.domain.data_generation;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +25,7 @@ public class RandomAssignment implements Assigment {
     private static final int MAX_COURSE_QUANTITY =
             Integer.parseInt(PropertiesUtil.get("max.course.quantity"));
         
-    public List<Student> assignGroups(SchoolDto dto) throws SQLException {
+    public List<Student> assignGroups(SchoolDto dto) {
         List<Student> students = dto.getStudents();
         List<Student> studentsToDelete = new ArrayList<>(students);
         List<Group> groups = dto.getGroups();
@@ -44,7 +43,7 @@ public class RandomAssignment implements Assigment {
         return students;
     }
     
-    public void assignCourses(SchoolDto dto) throws SQLException {
+    public void assignCourses(SchoolDto dto) {
         List<Student> studentsInGroups = retriveStudentsAssignedToGroups(dto.getStudents());
         List<Integer> coursesIds = retriveCoursesIds(dto.getCourses());
         assignRandomCourses(studentsInGroups, coursesIds);
@@ -62,7 +61,7 @@ public class RandomAssignment implements Assigment {
                 .collect(Collectors.toList());
     }
     
-    private void assignRandomCourses(List<Student> students, List<Integer> courseId) throws SQLException {
+    private void assignRandomCourses(List<Student> students, List<Integer> courseId) {
         for(Student student : students) {
             Set<Integer> courseIdToAssign = retriveIdsToAssign(courseId);
             StudentDao studentDao = StudentDao.getInstance();

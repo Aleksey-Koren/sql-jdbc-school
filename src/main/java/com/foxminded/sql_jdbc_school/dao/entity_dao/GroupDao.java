@@ -12,9 +12,8 @@ import java.util.Optional;
 import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
-import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
-public class GroupDao implements EntityDao<Group, Integer> {
+public class GroupDao extends EntityDao<Group, Integer> {
     
     private static final GroupDao INSTANCE = new GroupDao();
  
@@ -108,8 +107,9 @@ public class GroupDao implements EntityDao<Group, Integer> {
             throw new DAOException(e);
         }
     }
-
-    public List<Group> saveAll(List<Group> groups) throws SQLException {
+    
+    @Override
+    public List<Group> saveAll(List<Group> groups) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -128,23 +128,23 @@ public class GroupDao implements EntityDao<Group, Integer> {
             connection.commit();
             connection.setAutoCommit(true);
             return groups;
-        }catch (SQLException e){
+        }catch (Exception e) {
             if(connection != null) {
-                connection.rollback();
-            }        
+                processRollback(connection);
+            }
             throw new DAOException(e);
-        }finally {
+        } finally {
             if(save != null) {
-                save.close();
+                processClose(save);
             }
             if(connection != null) {
-                connection.close();
-            }      
+                processClose(connection); 
+            }        
         }
     }
     
     @Override
-    public void updateAll(List<Group> groups) throws SQLException {
+    public void updateAll(List<Group> groups) {
         Connection connection = null;
         PreparedStatement update = null;
         try {
@@ -160,19 +160,19 @@ public class GroupDao implements EntityDao<Group, Integer> {
             
             connection.commit();
             connection.setAutoCommit(true);          
-        }catch(SQLException e){
+        }catch(Exception e){
             if(connection != null) {
-                connection.rollback();
+                processRollback(connection);
                 }         
             throw new DAOException(e);           
         }finally {
             if(update != null) {
-                update.close();              
+                processClose(update);
             }
             if(connection != null) {
-                connection.close();   
+                processClose(connection); 
             }         
-        }    
+        }   
     }
     
     public List<Group> getAllByStudentsQuantity(int quantity) {
