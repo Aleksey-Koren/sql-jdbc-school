@@ -1,10 +1,5 @@
 package com.foxminded.sql_jdbc_school.domain;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.SQLException;
-
 import com.foxminded.sql_jdbc_school.dao.TablesCreation;
 import com.foxminded.sql_jdbc_school.domain.data_generation.CourseGenerator;
 import com.foxminded.sql_jdbc_school.domain.data_generation.DataProvider;
@@ -15,18 +10,16 @@ import com.foxminded.sql_jdbc_school.domain.data_generation.RandomStudentsGenera
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
-import com.foxminded.sql_jdbc_school.domain.menu.ApplicationMenu;
+import com.foxminded.sql_jdbc_school.domain.menu.terminal.Formatter;
+import com.foxminded.sql_jdbc_school.domain.menu.terminal.TerminalMenu;
+import com.foxminded.sql_jdbc_school.domain.menu.terminal.Processor;
+import com.foxminded.sql_jdbc_school.domain.menu.terminal.ToStringFormatter;
 import com.foxminded.sql_jdbc_school.domain.data_generation.RandomAssignment;
 
 public class ApplicationRunner {
     
-    private static final String MENU = """
-            Type [1] to find all groups with less or equals student count
-            
-            """;
-    private static final String EXIT = "exit";
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         TablesCreation tablesCreator = new TablesCreation();
         tablesCreator.create();
 
@@ -41,15 +34,9 @@ public class ApplicationRunner {
                                                            assignment);
         dataProvider.provide();
         
-        runMenu();
-    }
-    
-    private static void runMenu() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        ApplicationMenu menu = new ApplicationMenu();
-        System.out.print(MENU);
-        while(!reader.readLine().equals(EXIT)) {
-            System.out.print(MENU);
-        }
+        Processor processor = new Processor();
+        Formatter formatter = new ToStringFormatter();
+        TerminalMenu terminalMenu = new TerminalMenu(processor, formatter);
+        terminalMenu.run();
     }
 }
