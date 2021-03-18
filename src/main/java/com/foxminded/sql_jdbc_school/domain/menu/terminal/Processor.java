@@ -235,8 +235,7 @@ public class Processor {
     }
     
     private boolean isInteger(String string) {
-        try {
-            Number number = 
+        try { 
             Integer.valueOf(string);
             return true;
         }catch(NumberFormatException e) {
