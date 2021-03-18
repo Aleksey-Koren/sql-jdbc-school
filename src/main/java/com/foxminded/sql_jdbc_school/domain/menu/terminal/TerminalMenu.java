@@ -3,10 +3,9 @@ package com.foxminded.sql_jdbc_school.domain.menu.terminal;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Optional;
 
 import com.foxminded.sql_jdbc_school.domain.DomainException;
-import com.foxminded.sql_jdbc_school.domain.entity.Student;
+import com.foxminded.sql_jdbc_school.dto.MenuDto;
 
 public class TerminalMenu {
     
@@ -20,21 +19,67 @@ public class TerminalMenu {
     
     public void run() { 
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))){
-            String userInput = processor.receveFromUser(reader, formatter.formatMainMenu());
-            while(!userInput.equals("exit")){
+            String userInput;
+            do {
+                userInput = processor.requestToUser(reader, formatter.formatMainMenu());
+                switch(userInput) {
                 
-                switch(userInput) {   
                 case "1" -> {
-                    Optional<Student> student = processor.addStudent(reader);
-                    if(student.isPresent()) {
-                        System.out.println(formatter.formatAddStudent(student.get()));
+                    MenuDto dto = processor.processAddNewStudent(reader);
+                    if (dto.isCanceled()) {
+                        continue;
                     }
+                    System.out.println(formatter.formatAddStudent(dto));
                 }
-                default -> System.out.println(formatter.formatDefault());
+             
+                case "2" -> {
+                    MenuDto dto = processor.processDeleteById(reader);
+                    if (dto.isCanceled()) {
+                        continue;
+                    }
+                    System.out.println(formatter.formatDeleteStudentById(dto));
                 }
                 
-                userInput = processor.receveFromUser(reader, formatter.formatMainMenu());
-            }
+                case "3" -> {
+                    MenuDto dto = processor.processAddStudentCourse(reader);
+                    if (dto.isCanceled()) {
+                        continue;
+                    }
+                    System.out.println(formatter.formatAddStudentToCourse(dto));
+                    
+                }
+                
+                case "4" -> {
+                    MenuDto dto = processor.processDeleteStudentFromCourse(reader);
+                    if (dto.isCanceled()) {
+                        continue;
+                    }
+                    System.out.println(formatter.formatDeleteStudentFromCourse(dto));
+                }
+                
+                case "5" -> {
+                    MenuDto dto = processor.processGetStudentsByCourse(reader);
+                    if (dto.isCanceled()) {
+                        continue;
+                    }
+                    System.out.println(formatter.formatGetStudentsByCourse(dto));
+                }
+                
+                case "6" -> {
+                    MenuDto dto = processor.processFindGroupsByStudentCount(reader);
+                    if (dto.isCanceled()) {
+                        continue;
+                    }
+                    System.out.println(formatter.formatFindGroupsByStudentCount(dto));
+                }
+                
+                case "exit" -> {
+                    System.out.println(formatter.formatExit());
+                }
+                
+                default -> System.out.println(formatter.formatDefault());
+                }                
+            }while(!userInput.equals("exit"));
         } catch (IOException e) {
             throw new DomainException(e);
         }

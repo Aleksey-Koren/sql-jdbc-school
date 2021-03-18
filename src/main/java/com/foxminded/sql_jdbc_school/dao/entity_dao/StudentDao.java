@@ -17,6 +17,15 @@ import com.foxminded.sql_jdbc_school.domain.entity.Student;
 public class StudentDao extends EntityDao<Student, Integer> {
     
     private static final StudentDao INSTANCE = new StudentDao();
+    
+    private static final String GET_ALL = """
+            SELECT id,
+                   group_id,
+                   first_name,
+                   last_name
+            FROM students
+            ORDER BY id;
+            """;
    
     private static final String SAVE_SQL = """
             INSERT INTO students 
@@ -36,21 +45,13 @@ public class StudentDao extends EntityDao<Student, Integer> {
             DELETE FROM students
             WHERE id = ?;
             """;
-    
-    private static final String GET_BY_ID = """
-            SELECT id,
-                   group_id,
-                   first_name,
-                   last_name
-            FROM students
-            WHERE id = ?;
-            """;
+
     
     private static final String GET_ALL_BY_COURSE_NAME = """
             SELECT students.id,
                    students.group_id,
                    students.first_name,
-                   students.last_name, 
+                   students.last_name 
             FROM (SELECT s.id,
                          s.group_id,
                          s.first_name,
@@ -59,21 +60,23 @@ public class StudentDao extends EntityDao<Student, Integer> {
                   FROM students s
                       JOIN students_courses sc ON s.id = sc.student_id
                           JOIN courses c ON sc.course_id = c.id) students
-            WHERE students.course_name = ?;
+            WHERE students.course_name = ?
+            ORDER BY students.id;
             """;
-    
+  
     private static final String LINK_STUDENT_COURSE = """
             INSERT INTO students_courses
             (student_id, course_id)
             VALUES
             (?, ?);
-            """;
-    private static final String UNLINK_STUDENT_COURSE = """
+            """; 
+    
+    private static final String DELETE_STUDENT_COURSE = """
             DELETE FROM students_courses
             WHERE student_id = ?
             AND course_id = ?;
             """;
-    
+            
     private StudentDao() {
         
     }
@@ -113,14 +116,16 @@ public class StudentDao extends EntityDao<Student, Integer> {
                 update.executeUpdate();
         }catch (SQLException e){
             throw new DAOException(e);
-        }
-        
+        }   
     }
     
     @Override
     public Optional<Student> getById(Integer id) {
+        String getById = GET_ALL.replaceFirst("ORDER BY id;", """
+                    
+                                                   WHERE id = ?;""");
         try(Connection connection = ConnectionManager.get();
-            PreparedStatement get = connection.prepareStatement(GET_BY_ID)){
+            PreparedStatement get = connection.prepareStatement(getById)){
             get.setInt(1, id);
             ResultSet resultSet = get.executeQuery();
             return resultSet.next() ?
@@ -129,16 +134,18 @@ public class StudentDao extends EntityDao<Student, Integer> {
             throw new DAOException(e);
         }
     }
-  @Override  
-  public boolean deleteById (Integer id) {
-      try (Connection connection = ConnectionManager.get();
-              PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
-          delete.setInt(1, id);
-          return delete.executeUpdate() > 0;
-      }catch(SQLException e) {
-          throw new DAOException(e);
-      }
-  }
+    
+    @Override  
+    public boolean deleteById (Integer id) {
+        try (Connection connection = ConnectionManager.get();
+                PreparedStatement delete = connection.prepareStatement(DELETE_SQL)){
+            delete.setInt(1, id);
+            return delete.executeUpdate() > 0;
+        }catch(SQLException e) {
+            throw new DAOException(e);
+        }
+    }
+    
     @Override
     public List<Student> saveAll(List<Student> students) {
         Connection connection = null;
@@ -175,6 +182,7 @@ public class StudentDao extends EntityDao<Student, Integer> {
             }        
         }
     }
+    
     @Override
     public void updateAll(List<Student> students) {
         Connection connection = null;
@@ -209,6 +217,21 @@ public class StudentDao extends EntityDao<Student, Integer> {
         }
     }
     
+    @Override
+    public List<Student> getAll(){
+        List<Student> result = new ArrayList<>();
+        try(Connection connection = ConnectionManager.get();
+                PreparedStatement get = connection.prepareStatement(GET_ALL)){
+                ResultSet resultSet = get.executeQuery();
+                while(resultSet.next()) {
+                    result.add(createFromResultSet(resultSet));
+                }
+                return result;
+            }catch (Exception e) {
+                throw new DAOException(e);
+            }
+    }
+    
     public List<Student> getAllByCourseName (String courseName) {
         List<Student> result = new ArrayList<>();
         try(Connection connection = ConnectionManager.get();
@@ -224,7 +247,7 @@ public class StudentDao extends EntityDao<Student, Integer> {
         return result;
     }
     
-    public void addStudentToCourses(Student student, Set<Integer> courseId) {
+    public void addStudentToCourses(Integer studentId, Set<Integer> courseId) {
         Connection connection = null;
         PreparedStatement save = null;
         try {
@@ -232,7 +255,7 @@ public class StudentDao extends EntityDao<Student, Integer> {
             save = connection.prepareStatement(LINK_STUDENT_COURSE);
             connection.setAutoCommit(false);
             for(Integer id : courseId) {
-                save.setInt(1, student.getId());
+                save.setInt(1, studentId);
                 save.setInt(2, id);
                 save.executeUpdate();
             }      
@@ -255,7 +278,7 @@ public class StudentDao extends EntityDao<Student, Integer> {
     
     public boolean deleteStudentFromCourse(int studentId, int courseId) {
         try (Connection connection = ConnectionManager.get();
-                PreparedStatement delete = connection.prepareStatement(UNLINK_STUDENT_COURSE)){
+                PreparedStatement delete = connection.prepareStatement(DELETE_STUDENT_COURSE)){
             delete.setInt(1, studentId);
             delete.setInt(2, courseId);
             return delete.executeUpdate() > 0;
@@ -270,20 +293,4 @@ public class StudentDao extends EntityDao<Student, Integer> {
                 resultSet.getString("first_name"),
                 resultSet.getString("last_name"));
     }
-    
-//    private void processRollback(Connection connection) {
-//        try {
-//            connection.rollback();
-//        }catch(SQLException e) {
-//            throw new DAOException(e);
-//        }
-//    }
-//    
-//    private void processClose (AutoCloseable closeable) {
-//        try {
-//            closeable.close();
-//        } catch (Exception e) {
-//            throw new DAOException(e);
-//        }
-//    }
 }

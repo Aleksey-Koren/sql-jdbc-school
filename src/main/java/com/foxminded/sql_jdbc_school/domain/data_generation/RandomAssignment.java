@@ -65,7 +65,7 @@ public class RandomAssignment implements Assigment {
         for(Student student : students) {
             Set<Integer> courseIdToAssign = retriveIdsToAssign(courseId);
             StudentDao studentDao = StudentDao.getInstance();
-            studentDao.addStudentToCourses(student, courseIdToAssign);
+            studentDao.addStudentToCourses(student.getId(), courseIdToAssign);
         }
     }
     

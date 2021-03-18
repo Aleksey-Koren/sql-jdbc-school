@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,17 +30,44 @@ public class CourseDao extends EntityDao<Course, Integer> {
                 course_description = ?              
             WHERE id = ?;
             """;
-    private static final String GET_BY_ID = """
+    
+    
+    private static final String GET_ALL = """
             SELECT id,
                    course_name,
                    course_description
-            FROM courses
-            WHERE id = ?;       
+            FROM courses;
             """;  
+    
     private static final String DELETE_SQL = """
             DELETE FROM courses
             WHERE id = ?;
-            """; 
+            """;
+        
+    private static final String GET_COURSES_BY_STUDENT_ID = """
+            SELECT c.id ,
+                    course_name,
+                    course_description
+            FROM courses c
+                LEFT JOIN students_courses sc ON c.id = sc.course_id
+            WHERE sc.student_id = ?
+            ORDER BY id;
+            """;
+    
+    private static final String GET_COURSES_WITHOUT_STUDENT_ID = """
+            (SELECT id,
+                    course_name,
+                    course_description
+            FROM courses)
+            EXCEPT
+            (SELECT c.id ,
+                    course_name,
+                    course_description
+            FROM courses c
+                LEFT JOIN students_courses sc ON c.id = sc.course_id
+            WHERE sc.student_id = ?)
+            ORDER BY id;
+            """;
     
     private CourseDao() {
         
@@ -94,8 +122,9 @@ public class CourseDao extends EntityDao<Course, Integer> {
 
     @Override
     public Optional<Course> getById(Integer id) {
+        String getById = GET_ALL.replace(";", " WHERE id = ?;");
         try(Connection connection = ConnectionManager.get();
-                PreparedStatement get = connection.prepareStatement(GET_BY_ID)){
+                PreparedStatement get = connection.prepareStatement(getById)){
                 get.setInt(1, id);
                 ResultSet resultSet = get.executeQuery();
                 return resultSet.next() ?
@@ -171,6 +200,52 @@ public class CourseDao extends EntityDao<Course, Integer> {
             if(connection != null) {
                 processClose(connection); 
             }         
+        }
+    }
+    
+    @Override
+    public List<Course> getAll(){
+        List<Course> result = new ArrayList<>();
+        String getAllOrdered = GET_ALL.replace(";", " ORDER BY id;");
+        try(Connection connection = ConnectionManager.get();
+            PreparedStatement get = connection.prepareStatement(getAllOrdered)){
+            ResultSet resultSet = get.executeQuery();
+            while(resultSet.next()) {
+                result.add(createFromResultSet(resultSet));
+            }
+            return result;
+        }catch (Exception e) {
+            throw new DAOException(e);
+        }
+    }
+    
+    public List<Course> getCoursesByStudentId(Integer studentId){
+        List<Course> result = new ArrayList<>();
+        try(Connection connection = ConnectionManager.get();
+            PreparedStatement get = connection.prepareStatement(GET_COURSES_BY_STUDENT_ID)){
+            get.setInt(1, studentId);
+            ResultSet resultSet = get.executeQuery();
+            while(resultSet.next()) {
+                result.add(createFromResultSet(resultSet));
+            }
+            return result;
+        }catch (Exception e) {
+            throw new DAOException(e);
+        }
+    }
+    
+    public List<Course> getCoursesWithoutStudentId(Integer studentId){
+        List<Course> result = new ArrayList<>();
+        try(Connection connection = ConnectionManager.get();
+            PreparedStatement get = connection.prepareStatement(GET_COURSES_WITHOUT_STUDENT_ID)){
+            get.setInt(1, studentId);
+            ResultSet resultSet = get.executeQuery();
+            while(resultSet.next()) {
+                result.add(createFromResultSet(resultSet));
+            }
+            return result;
+        }catch (Exception e) {
+            throw new DAOException(e);
         }
     }
 

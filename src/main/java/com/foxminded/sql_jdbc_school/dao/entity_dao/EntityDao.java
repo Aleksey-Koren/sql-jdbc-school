@@ -17,6 +17,8 @@ public abstract class EntityDao <T, D> {
     
     public abstract Optional <T> getById(D id);
     
+    public abstract List<T> getAll();
+    
     public abstract List<T> saveAll(List<T> entities);
     
     public abstract void updateAll(List<T> entities);

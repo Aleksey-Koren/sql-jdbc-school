@@ -34,8 +34,8 @@ public class ApplicationRunner {
                                                            assignment);
         dataProvider.provide();
         
-        Processor processor = new Processor();
         Formatter formatter = new ToStringFormatter();
+        Processor processor = new Processor(formatter);
         TerminalMenu terminalMenu = new TerminalMenu(processor, formatter);
         terminalMenu.run();
     }

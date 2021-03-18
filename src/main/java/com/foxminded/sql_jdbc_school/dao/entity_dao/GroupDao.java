@@ -12,6 +12,7 @@ import java.util.Optional;
 import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
+import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
 public class GroupDao extends EntityDao<Group, Integer> {
     
@@ -23,27 +24,39 @@ public class GroupDao extends EntityDao<Group, Integer> {
             VALUES
             (?);
             """;
+    
     private static final String UPDATE_SQL = """
             UPDATE groups
             SET group_name = ?
             WHERE id = ?;
             """;
+    
     private static final String GET_BY_ID = """
             SELECT id,
                    group_name
             FROM groups
             WHERE id = ?;       
             """;  
+    
+    private static final String GET_ALL = """
+            SELECT id,
+                   group_name
+            FROM groups
+            ORDER BY id;
+            """;
+    
     private static final String DELETE_SQL = """
             DELETE FROM groups
             WHERE id = ?;
-            """;   
+            """;
+    
     private static final String GET_ALL_BY_STUDENTS_QUANTITY = """
             SELECT  g.id, g.group_name, count(s.id) student_id
             FROM "groups" g 
                 JOIN students s ON g.id = s.group_id
             GROUP BY g.id
-            HAVING count(s.id) <= ?;
+            HAVING count(s.id) <= ?
+            ORDER BY g.id;
             """;
     
     private GroupDao() {
@@ -173,6 +186,21 @@ public class GroupDao extends EntityDao<Group, Integer> {
                 processClose(connection); 
             }         
         }   
+    }
+    
+    @Override
+    public List<Group> getAll() {
+        List<Group> result = new ArrayList<>();
+        try(Connection connection = ConnectionManager.get();
+                PreparedStatement get = connection.prepareStatement(GET_ALL)){
+                ResultSet resultSet = get.executeQuery();
+                while(resultSet.next()) {
+                    result.add(createFromResultSet(resultSet));
+                }
+                return result;
+            }catch (Exception e) {
+                throw new DAOException(e);
+            }
     }
     
     public List<Group> getAllByStudentsQuantity(int quantity) {
