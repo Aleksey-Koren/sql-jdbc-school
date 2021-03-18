@@ -209,7 +209,7 @@ public class Processor {
            if(isInteger(response)) {
                Optional<T> entity = entityDao.getById(Integer.valueOf(response));
                if(entity.isPresent()) {
-                   if(isInTheList(entity.get(), list)) {
+                   if(list.contains(entity.get())) {
                        dto.<T>setEntity(entity);
                        return dto;
                    }else {
@@ -233,18 +233,10 @@ public class Processor {
         } 
     return null;
     }
-
-    private <T> boolean isInTheList(T entity , List<T> entities) {
-        for (T current : entities) {
-            if (current.equals(entity)) {
-                return true;
-            }
-        }
-        return false;
-    }
     
     private boolean isInteger(String string) {
         try {
+            Number number = 
             Integer.valueOf(string);
             return true;
         }catch(NumberFormatException e) {
