@@ -3,6 +3,7 @@ package com.foxminded.sql_jdbc_school.dto;
 import java.util.List;
 import java.util.Optional;
 
+import com.foxminded.sql_jdbc_school.domain.DomainException;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
@@ -20,10 +21,11 @@ public class MenuDto  {
     public <T> void setEntity(Optional<T> entity){
         if (entity.get() instanceof Student) {
             this.student = (Optional<Student>) entity;
-        }
-        if (entity.get() instanceof Course) {
+        }else if (entity.get() instanceof Course) {
             this.course = (Optional<Course>) entity;
-        }   
+        }else {
+            throw new DomainException("Invalid entity generic type");
+        }
     }
     public boolean isCanceled() {
         return isCanceled;
