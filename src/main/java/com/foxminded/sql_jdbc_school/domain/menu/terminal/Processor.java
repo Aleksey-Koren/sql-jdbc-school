@@ -155,6 +155,33 @@ public class Processor {
         dto.setStudents(students);
         return dto;
     }
+    
+    public MenuDto processFindGroupsByStudentCount(BufferedReader reader) {
+        MenuDto dto = new MenuDto();
+        String prompt = "Enter students count (integer value)" + "\n"
+                      + "Enter \"back\" to return to main menu" ;
+        while(true) {
+            String response =  requestToUser(reader, prompt);
+            
+            if(response.equals(BACK)) {
+                dto.setCanceled(true);
+                return dto;
+            }
+          
+            if(isInteger(response)) {
+                List<Group> groups = GROUP_DAO
+                        .getAllByStudentsQuantity(Integer.valueOf(response));
+                if(groups.isEmpty()) {
+                    System.out.println("There is no groups with such or less students count");
+                }else {
+                    dto.setGroups(groups);
+                    return dto; 
+                }
+            }else {
+                System.out.println("You have to enter integer value!");
+            }    
+         }
+    }
 
     private <T> MenuDto retriveEntityFromList(BufferedReader reader,
                                                MenuDto dto,
@@ -223,32 +250,5 @@ public class Processor {
         }catch(NumberFormatException e) {
             return false;
         }
-    }
-
-    public MenuDto processFindGroupsByStudentCount(BufferedReader reader) {
-        MenuDto dto = new MenuDto();
-        String prompt = "Enter students count (integer value)" + "\n"
-                      + "Enter \"back\" to return to main menu" ;
-        while(true) {
-            String response =  requestToUser(reader, prompt);
-            
-            if(response.equals(BACK)) {
-                dto.setCanceled(true);
-                return dto;
-            }
-          
-            if(isInteger(response)) {
-                List<Group> groups = GROUP_DAO
-                        .getAllByStudentsQuantity(Integer.valueOf(response));
-                if(groups.isEmpty()) {
-                    System.out.println("There is no groups with such or less students count");
-                }else {
-                    dto.setGroups(groups);
-                    return dto; 
-                }
-            }else {
-                System.out.println("You have to enter integer value!");
-            }    
-         }
     }
 }
