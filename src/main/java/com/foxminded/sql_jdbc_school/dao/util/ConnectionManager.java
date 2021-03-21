@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import com.foxminded.sql_jdbc_school.dao.PoolConnection;
 import com.foxminded.sql_jdbc_school.dao.DAOException;
 
+
 public final class ConnectionManager {
     
     private static final String URL = PropertiesUtil.get("db.url");
@@ -21,11 +22,16 @@ public final class ConnectionManager {
     private ConnectionManager() {
 
     }
-    
+  
     static {
         for (int i = 0; i < CONNECTIONS_QUANTITY; i++) {
             POOL.add(new PoolConnection(open()));
         }
+    }
+    
+    
+    public static int getPoolSize() {
+        return POOL.size();
     }
     
     public static PoolConnection get() {
@@ -46,7 +52,7 @@ public final class ConnectionManager {
     
     private static Connection open(){
         Connection connection = null;
-        try {            
+        try {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             return connection;
         } catch (SQLException e) {

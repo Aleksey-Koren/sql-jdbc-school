@@ -27,7 +27,7 @@ public final class PropertiesUtil {
         try(InputStream stream = PropertiesUtil.class.getClassLoader()
                 .getResourceAsStream("application.properties")){
             if(stream == null) {
-                throw new DAOException("properties file is not readed");
+                throw new DAOException("properties file has been not readed");
             }
             PROPERTIES.load(stream);
         } catch (IOException e) {

@@ -52,7 +52,7 @@ public class GroupDao extends EntityDao<Group, Integer> {
     
     private static final String GET_ALL_BY_STUDENTS_QUANTITY = """
             SELECT  g.id, g.group_name, count(s.id) student_id
-            FROM "groups" g 
+            FROM groups g 
                 JOIN students s ON g.id = s.group_id
             GROUP BY g.id
             HAVING count(s.id) <= ?

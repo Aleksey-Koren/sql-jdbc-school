@@ -1,3 +1,4 @@
+
 package com.foxminded.sql_jdbc_school.dao;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ public class TablesCreation {
 
     private static final Path TABLE_CREATION = Path.of("src", "main", "resources"
                                                             , "sql", "TablesCreation.sql");
-    
+        
     public void create() {     
         try(Connection connection = ConnectionManager.get();
             PreparedStatement createTables = connection.prepareStatement(getScript(TABLE_CREATION))) {

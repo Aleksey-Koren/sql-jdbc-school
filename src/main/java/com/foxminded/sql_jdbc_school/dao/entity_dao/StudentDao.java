@@ -76,7 +76,7 @@ public class StudentDao extends EntityDao<Student, Integer> {
             WHERE student_id = ?
             AND course_id = ?;
             """;
-            
+                
     private StudentDao() {
         
     }
@@ -286,7 +286,7 @@ public class StudentDao extends EntityDao<Student, Integer> {
             throw new DAOException(e);
         }
     }
-    
+        
     private Student createFromResultSet(ResultSet resultSet) throws SQLException {
         return new Student(resultSet.getInt("id"),
                 resultSet.getObject("group_id", Integer.class),
