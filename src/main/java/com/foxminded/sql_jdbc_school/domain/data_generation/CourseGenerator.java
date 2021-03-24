@@ -11,12 +11,12 @@ import com.foxminded.sql_jdbc_school.domain.entity.Course;
 
 public class CourseGenerator implements EntityGeneration<Course> {
     
-    private static final Path COURSES_DATA_PATH = Path
+    private static final Path COURSES_DATA_DEFAULT = Path
                                 .of("src", "main", "resources", "Courses.txt");
 
     @Override
     public List<Course> generate() {
-        String file = readFile();
+        String file = readFile(COURSES_DATA_DEFAULT);
         List<Course> courses = new ArrayList<>();
         String[] coursesData = file.split(";");
         for (int i = 0; i < coursesData.length; i++) {
@@ -28,9 +28,22 @@ public class CourseGenerator implements EntityGeneration<Course> {
         return courses;
     }
     
-    private String readFile() {
+    public List<Course> generate(Path path){
+        String file = readFile(path);
+        List<Course> courses = new ArrayList<>();
+        String[] coursesData = file.split(";");
+        for (int i = 0; i < coursesData.length; i++) {
+            String courseData = coursesData[i];
+            courseData = courseData.strip();
+            String[] courseDataAsArray = courseData.split("[|]");
+            courses.add(new Course(courseDataAsArray[0], courseDataAsArray[1]));
+        }
+        return courses;
+    }
+    
+    private String readFile(Path path) {
         try {
-            return Files.readString(COURSES_DATA_PATH);
+            return Files.readString(path);
         } catch (IOException e) {
             throw new DomainException(e);
         }   

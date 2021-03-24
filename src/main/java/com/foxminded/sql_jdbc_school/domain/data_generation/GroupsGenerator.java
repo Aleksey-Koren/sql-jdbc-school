@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.foxminded.sql_jdbc_school.dao.util.PropertiesUtil;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
 
-public class RandomGroupsGenerator implements EntityGeneration<Group> {
+public class GroupsGenerator implements EntityGeneration<Group> {
     
     private static final String HYPHEN = "-";
-    private static final int QUANTITY_OF_GROUPS = 10;
+    
+    private static final int QUANTITY_OF_GROUPS = 
+            Integer.parseInt(PropertiesUtil.get("quantity.of.groups"));
+    
     private static final int CHAR_RANGE_BEGIN = 97;
     private static final int CHAR_RANGE_END = 123;
     private static final int NUM_RANGE_BEGIN = 10;
@@ -19,6 +23,7 @@ public class RandomGroupsGenerator implements EntityGeneration<Group> {
 
     @Override
     public List<Group> generate() {
+        
         Set<String> names = retriveSetOfNames();
         List<Group> groups = new ArrayList<>();
         for(String name : names) {

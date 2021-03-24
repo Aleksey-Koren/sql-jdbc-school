@@ -12,5 +12,4 @@ class PropertiesUtilTest {
     void properties_shouldBeLoadedCorrectly() {
         assertEquals("test_property", PropertiesUtil.get("test"));
     }
-
 }
