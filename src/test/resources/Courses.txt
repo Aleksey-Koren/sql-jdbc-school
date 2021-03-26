@@ -4,27 +4,3 @@ math course;
 chemistry|This is
 description of
 chemistry course;
-biology|This is
-description of
-biology course;
-physics|This is
-description of
-physics course;
-history|This is
-description of
-physics course;
-programming|This is
-description of
-programming course;
-russian language|This is
-description of
-russian language course;
-english language|This is
-description of
-english language course;
-physical training|This is
-description of
-physical training course;
-history of art|This is
-description of
-history of art course;

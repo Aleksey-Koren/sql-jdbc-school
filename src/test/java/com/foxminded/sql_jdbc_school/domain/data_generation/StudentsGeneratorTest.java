@@ -31,6 +31,7 @@ class StudentsGeneratorTest {
     void generate_shouldGenerateStudentsWithCorrectNames() throws IOException {
         List<String> firstNames = null;
         List<String> lastNames = null;
+        
         try(Stream<String> file = Files.lines(FIRST_NAMES)){
             firstNames = file.collect(Collectors.toList());
         }
