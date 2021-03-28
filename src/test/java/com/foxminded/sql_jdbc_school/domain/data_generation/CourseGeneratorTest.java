@@ -11,17 +11,18 @@ import org.junit.jupiter.api.Test;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
 
 class CourseGeneratorTest {
-    
+
     private static final Path TEST_FILE = Path.of("src", "test", "resources", "Courses.txt");
 
     @Test
     void generate_shouldGenerateRightCoursesFromFile() {
-        List<Course> expectedCourses = Arrays.asList(new Course("math", "This is\r\n"
-                                                                      + "description of\r\n"
-                                                                      + "math course"),
-                                                     new Course ("chemistry", "This is\r\n"
-                                                                            + "description of\r\n"
-                                                                            + "chemistry course"));
+        List<Course> expectedCourses = Arrays.asList(
+                new Course("math", "This is\r\n"
+                                 + "description of\r\n"
+                                 + "math course"),
+                new Course("chemistry", "This is\r\n"
+                                      + "description of\r\n"
+                                      + "chemistry course"));
         CourseGenerator generator = new CourseGenerator();
         List<Course> courses = generator.generate(TEST_FILE);
         assertEquals(expectedCourses, courses);
