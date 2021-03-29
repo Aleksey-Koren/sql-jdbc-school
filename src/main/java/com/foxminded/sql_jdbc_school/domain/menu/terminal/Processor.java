@@ -105,7 +105,7 @@ public class Processor {
         }
         
         List<Course> courses = COURSE_DAO
-                .getCoursesWithoutStudentId(dto.getStudent().get().getId()); 
+                .getCoursesStudentDoesNotHave(dto.getStudent().get().getId()); 
         dto = retriveEntityFromList(reader, dto, courses, COURSE_DAO);
         
         if(dto.isCanceled()) {

@@ -12,7 +12,6 @@ import java.util.Optional;
 import com.foxminded.sql_jdbc_school.dao.DAOException;
 import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Group;
-import com.foxminded.sql_jdbc_school.domain.entity.Student;
 
 public class GroupDao extends EntityDao<Group, Integer> {
     
@@ -134,7 +133,7 @@ public class GroupDao extends EntityDao<Group, Integer> {
                 save.executeUpdate();
                 ResultSet resultSet = save.getGeneratedKeys();
                 if(resultSet.next()) {
-                    int id =resultSet.getInt("id");
+                    int id = resultSet.getInt("id");
                     group.setId(id);
                 }                
             }

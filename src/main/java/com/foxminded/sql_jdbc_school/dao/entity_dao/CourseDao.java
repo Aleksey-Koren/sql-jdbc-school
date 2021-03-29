@@ -49,7 +49,7 @@ public class CourseDao extends EntityDao<Course, Integer> {
                     course_name,
                     course_description
             FROM courses c
-                LEFT JOIN students_courses sc ON c.id = sc.course_id
+                JOIN students_courses sc ON c.id = sc.course_id
             WHERE sc.student_id = ?
             ORDER BY id;
             """;
@@ -64,7 +64,7 @@ public class CourseDao extends EntityDao<Course, Integer> {
                     course_name,
                     course_description
             FROM courses c
-                LEFT JOIN students_courses sc ON c.id = sc.course_id
+                JOIN students_courses sc ON c.id = sc.course_id
             WHERE sc.student_id = ?)
             ORDER BY id;
             """;
@@ -234,7 +234,7 @@ public class CourseDao extends EntityDao<Course, Integer> {
         }
     }
     
-    public List<Course> getCoursesWithoutStudentId(Integer studentId){
+    public List<Course> getCoursesStudentDoesNotHave(Integer studentId){
         List<Course> result = new ArrayList<>();
         try(Connection connection = ConnectionManager.get();
             PreparedStatement get = connection.prepareStatement(GET_COURSES_WITHOUT_STUDENT_ID)){
