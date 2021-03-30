@@ -18,8 +18,6 @@ public interface Formatter {
     public static final String NO_SUCH_ID = "There is no such ID in school.";
     
     public static final String ID_SHOULD_BE_INT = "ID should be integer!";
-    
-    
 
     String formatMainMenu();
 
@@ -42,7 +40,7 @@ public interface Formatter {
     String formatFindGroupsByStudentCount(MenuDto dto);
     
     default String formatNewNamePrompt(String nameType) {
-        return "Enter " + nameType + "(2 to 30 latin letters)" + "\n"
+        return "Enter " + nameType + " (2 to 30 latin letters)" + "\n"
              + "Enter \"back\" - to return to main menu";
     }
     
