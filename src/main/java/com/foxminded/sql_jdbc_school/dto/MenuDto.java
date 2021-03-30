@@ -11,6 +11,7 @@ import com.foxminded.sql_jdbc_school.domain.entity.Student;
 public class MenuDto  {
     
     private boolean isCanceled;
+    private boolean isSelected;
     private Optional<Student> student;
     private List<Student> students;
     private Optional<Course> course;
@@ -26,6 +27,15 @@ public class MenuDto  {
         }else {
             throw new DomainException("Invalid entity generic type");
         }
+    }
+    
+    
+    
+    public boolean isSelected() {
+        return isSelected;
+    }
+    public void setSelected(boolean isSelected) {
+        this.isSelected = isSelected;
     }
     public boolean isCanceled() {
         return isCanceled;

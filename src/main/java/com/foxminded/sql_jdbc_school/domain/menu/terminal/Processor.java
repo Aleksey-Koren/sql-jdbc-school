@@ -43,14 +43,14 @@ public class Processor {
     
     public MenuDto processAddNewStudent(BufferedReader reader) {
         MenuDto dto = new MenuDto();
-        dto = retriveNewName(reader, dto, "first name");
+        retriveNewName(reader, dto, "first name");
         
         if(dto.isCanceled()) {
             return dto;
         }
         
         String firstName = dto.getNewName();
-        dto = retriveNewName(reader, dto, "last name");
+        retriveNewName(reader, dto, "last name");
         
         if(dto.isCanceled()) {
             return dto;
@@ -63,9 +63,8 @@ public class Processor {
     
     private MenuDto retriveNewName(BufferedReader reader, MenuDto dto, String nameType) {
         String newName;
-        do {
-            newName = requestToUser(reader, "Enter " + nameType + "(2 to 30 latin letters)" + "\n"
-                                          + "Enter \"back\" - to return to main menu");
+        do {                        
+            newName = requestToUser(reader, formatter.formatNewNamePrompt(nameType));
             if(newName.equals(BACK)) {
                 dto.setCanceled(true);
                 return dto;
@@ -84,7 +83,7 @@ public class Processor {
         MenuDto dto = new MenuDto();
         
         List<Student> students = STUDENT_DAO.getAll();
-        dto = retriveEntityFromList(reader, dto, students, STUDENT_DAO);
+        selectEntityFromList(reader, dto, students, STUDENT_DAO);
         
         if(dto.isCanceled()) {
             return dto;
@@ -98,7 +97,7 @@ public class Processor {
         MenuDto dto = new MenuDto();
         
         List<Student> students = STUDENT_DAO.getAll();
-        dto = retriveEntityFromList(reader, dto, students, STUDENT_DAO);
+        selectEntityFromList(reader, dto, students, STUDENT_DAO);
         
         if(dto.isCanceled()) {
             return dto;
@@ -106,7 +105,7 @@ public class Processor {
         
         List<Course> courses = COURSE_DAO
                 .getCoursesStudentDoesNotHave(dto.getStudent().get().getId()); 
-        dto = retriveEntityFromList(reader, dto, courses, COURSE_DAO);
+        selectEntityFromList(reader, dto, courses, COURSE_DAO);
         
         if(dto.isCanceled()) {
             return dto;
@@ -122,7 +121,7 @@ public class Processor {
         MenuDto dto = new MenuDto();
         
         List<Student> students = STUDENT_DAO.getAll();
-        dto = retriveEntityFromList(reader, dto, students, STUDENT_DAO);
+        selectEntityFromList(reader, dto, students, STUDENT_DAO);
         
         if(dto.isCanceled()) {
             return dto;
@@ -130,7 +129,7 @@ public class Processor {
         
         List<Course> coursesOfStudent = COURSE_DAO
                 .getCoursesByStudentId(dto.getStudent().get().getId());
-        dto = retriveEntityFromList(reader, dto, coursesOfStudent, COURSE_DAO);
+        selectEntityFromList(reader, dto, coursesOfStudent, COURSE_DAO);
         
         if(dto.isCanceled()) {
             return dto;
@@ -144,7 +143,7 @@ public class Processor {
     public MenuDto processGetStudentsByCourse(BufferedReader reader) {
         MenuDto dto = new MenuDto();
         List<Course> coursesList = COURSE_DAO.getAll();
-        dto = retriveEntityFromList(reader, dto, coursesList, COURSE_DAO);
+        selectEntityFromList(reader, dto, coursesList, COURSE_DAO);
         
         if(dto.isCanceled()) {
             return dto;
@@ -158,10 +157,9 @@ public class Processor {
     
     public MenuDto processFindGroupsByStudentCount(BufferedReader reader) {
         MenuDto dto = new MenuDto();
-        String prompt = "Enter students count (integer value)" + "\n"
-                      + "Enter \"back\" to return to main menu" ;
+
         while(true) {
-            String response =  requestToUser(reader, prompt);
+            String response =  requestToUser(reader, Formatter.STUDENTS_COUNT_PROMPT);
             
             if(response.equals(BACK)) {
                 dto.setCanceled(true);
@@ -172,55 +170,62 @@ public class Processor {
                 List<Group> groups = GROUP_DAO
                         .getAllByStudentsQuantity(Integer.valueOf(response));
                 if(groups.isEmpty()) {
-                    System.out.println("There is no groups with such or less students count");
+                    System.out.println(Formatter.NO_SUCH_GROUPS);
                 }else {
                     dto.setGroups(groups);
                     return dto; 
                 }
             }else {
-                System.out.println("You have to enter integer value!");
+                System.out.println(Formatter.ENTER_INTEGER);
             }    
          }
     }
 
-    private <T> MenuDto retriveEntityFromList(BufferedReader reader,
+    private <T> void selectEntityFromList(BufferedReader reader,
                                                MenuDto dto,
                                                List<T> list,
                                                EntityDao<T, Integer> entityDao) {
         String entityList = formatter.formatEntityList(list);
         String entityTypeName = retriveEntityTypeName(entityDao);
-        String prompt =
-               "===========================================================" + "\n"  
-                + entityList + """
-                
-                ===========================================================
-                
-                Enter""" + " " + entityTypeName +  """
-                 id from a list (integer value)
-                Enter \"back\" to return to main menu""";
-        while(true) {
+        String prompt = formatter.formatEntityFromListPrompt(entityList, entityTypeName);
+
+        while(!dto.isSelected()) {
            String response =  requestToUser(reader, prompt);
            
            if(response.equals(BACK)) {
                dto.setCanceled(true);
-               return dto;
-           }
-         
-           if(isInteger(response)) {
-               Optional<T> entity = entityDao.getById(Integer.valueOf(response));
-               if(entity.isPresent()) {
-                   if(list.contains(entity.get())) {
-                       dto.<T>setEntity(entity);
-                       return dto;
-                   }else {
-                       System.out.println("You should chose from the list!");
-                   }
-               }else {
-                   System.out.println("There is no such ID in school.");
-               }     
-           }else {
-               System.out.println("ID should be integer!");
+               break;
            }    
+           selectIfValidResponse(response, dto, list, entityDao);
+        }
+    }
+    
+    private <T> void selectIfValidResponse(String response,
+                                           MenuDto dto,
+                                           List<T> list,
+                                           EntityDao<T, Integer> entityDao ) {
+        if(isInteger(response)) {
+            Optional<T> entity = entityDao.getById(Integer.valueOf(response));
+            selectIfPresent(entity, dto, list);   
+        }else {
+            System.out.println(Formatter.ID_SHOULD_BE_INT);
+        }   
+    }
+    
+    private <T> void selectIfPresent(Optional<T> entity, MenuDto dto, List<T> list) {
+        if(entity.isPresent()) {
+            selectIfFromList(entity, dto, list);
+        }else {
+            System.out.println(Formatter.NO_SUCH_ID);
+        } 
+    }
+    
+    private <T> void selectIfFromList(Optional<T> entity, MenuDto dto, List<T> list) {
+        if(list.contains(entity.get())) {
+            dto.<T>setEntity(entity);
+            dto.setSelected(true);
+        }else {
+            System.out.println(Formatter.CHOSE_FROM_LIST);
         }
     }
     
