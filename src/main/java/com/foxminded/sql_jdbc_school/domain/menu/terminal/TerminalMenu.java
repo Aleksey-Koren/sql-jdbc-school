@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import com.foxminded.sql_jdbc_school.dao.entity_dao.CourseDao;
+import com.foxminded.sql_jdbc_school.dao.entity_dao.GroupDao;
+import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentDao;
 import com.foxminded.sql_jdbc_school.domain.DomainException;
 import com.foxminded.sql_jdbc_school.dto.MenuDto;
 
@@ -11,6 +14,10 @@ public class TerminalMenu {
     
     private Processor processor;
     private Formatter formatter;
+    
+    private static final StudentDao STUDENT_DAO = StudentDao.getInstance();
+    private static final CourseDao COURSE_DAO = CourseDao.getInstance();
+    private static final GroupDao GROUP_DAO = GroupDao.getInstance();
     
     public TerminalMenu (Processor processor, Formatter formatter) {
         this.processor = processor;
@@ -25,7 +32,7 @@ public class TerminalMenu {
                 switch(userInput) {
                 
                 case "1" -> {
-                    MenuDto dto = processor.processAddNewStudent(reader);
+                    MenuDto dto = processor.processAddNewStudent(reader, STUDENT_DAO);
                     if (dto.isCanceled()) {
                         continue;
                     }
@@ -33,7 +40,7 @@ public class TerminalMenu {
                 }
              
                 case "2" -> {
-                    MenuDto dto = processor.processDeleteById(reader);
+                    MenuDto dto = processor.processDeleteById(reader, STUDENT_DAO);
                     if (dto.isCanceled()) {
                         continue;
                     }
@@ -41,7 +48,9 @@ public class TerminalMenu {
                 }
                 
                 case "3" -> {
-                    MenuDto dto = processor.processAddStudentCourse(reader);
+                    MenuDto dto = processor.processAddStudentCourse(reader,
+                                                                    STUDENT_DAO,
+                                                                    COURSE_DAO);
                     if (dto.isCanceled()) {
                         continue;
                     }
@@ -50,7 +59,9 @@ public class TerminalMenu {
                 }
                 
                 case "4" -> {
-                    MenuDto dto = processor.processDeleteStudentFromCourse(reader);
+                    MenuDto dto = processor.processDeleteStudentFromCourse(reader,
+                                                                           STUDENT_DAO,
+                                                                           COURSE_DAO);
                     if (dto.isCanceled()) {
                         continue;
                     }
@@ -58,7 +69,9 @@ public class TerminalMenu {
                 }
                 
                 case "5" -> {
-                    MenuDto dto = processor.processGetStudentsByCourse(reader);
+                    MenuDto dto = processor.processGetStudentsByCourse(reader,
+                                                                       STUDENT_DAO,
+                                                                       COURSE_DAO);
                     if (dto.isCanceled()) {
                         continue;
                     }

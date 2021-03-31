@@ -28,9 +28,9 @@ public class Processor {
     }
     private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z]{2,30}$");
     private static final String BACK = "back";
-    private static final StudentDao STUDENT_DAO = StudentDao.getInstance();
-    private static final CourseDao COURSE_DAO = CourseDao.getInstance();
-    private static final GroupDao GROUP_DAO = GroupDao.getInstance();
+//    private static final StudentDao STUDENT_DAO = StudentDao.getInstance();
+//    private static final CourseDao COURSE_DAO = CourseDao.getInstance();
+//    private static final GroupDao GROUP_DAO = GroupDao.getInstance();
     
     public String requestToUser(BufferedReader reader, String prompt) {
         try {
@@ -41,7 +41,7 @@ public class Processor {
         }
     }
     
-    public MenuDto processAddNewStudent(BufferedReader reader) {
+    public <T,I> MenuDto processAddNewStudent(BufferedReader reader, StudentDao dao) {
         MenuDto dto = new MenuDto();
         retriveNewName(reader, dto, "first name");
         
@@ -57,7 +57,7 @@ public class Processor {
         }
         
         String lastName = dto.getNewName();
-        dto.setStudent(Optional.of(STUDENT_DAO.save(new Student(firstName, lastName))));
+        dto.setStudent(Optional.of(dao.save(new Student(firstName, lastName))));
         return dto;
     }
     
@@ -79,83 +79,88 @@ public class Processor {
         return matcher.find();
     }
 
-    public MenuDto processDeleteById(BufferedReader reader) {
+    public MenuDto processDeleteById(BufferedReader reader, StudentDao dao) {
         MenuDto dto = new MenuDto();
         
-        List<Student> students = STUDENT_DAO.getAll();
-        selectEntityFromList(reader, dto, students, STUDENT_DAO);
+        List<Student> students = dao.getAll();
+        selectEntityFromList(reader, dto, students, dao);
         
         if(dto.isCanceled()) {
             return dto;
         }
         
-        STUDENT_DAO.deleteById(dto.getStudent().get().getId());
+        dao.deleteById(dto.getStudent().get().getId());
         return dto;
     }
 
-    public MenuDto processAddStudentCourse(BufferedReader reader) {
+    public MenuDto processAddStudentCourse(BufferedReader reader,
+                                           StudentDao studentDao, CourseDao courseDao) {
         MenuDto dto = new MenuDto();
         
-        List<Student> students = STUDENT_DAO.getAll();
-        selectEntityFromList(reader, dto, students, STUDENT_DAO);
+        List<Student> students = studentDao.getAll();
+        selectEntityFromList(reader, dto, students, studentDao);
         
         if(dto.isCanceled()) {
             return dto;
         }
         
-        List<Course> courses = COURSE_DAO
+        List<Course> courses = courseDao
                 .getCoursesStudentDoesNotHave(dto.getStudent().get().getId()); 
-        selectEntityFromList(reader, dto, courses, COURSE_DAO);
+        selectEntityFromList(reader, dto, courses, courseDao);
         
         if(dto.isCanceled()) {
             return dto;
         }
+        
            
         Set<Integer> courseId = new HashSet<>();
         courseId.add(dto.getCourse().get().getId());
-        STUDENT_DAO.addStudentToCourses(dto.getStudent().get().getId(), courseId);
+        studentDao.addStudentToCourses(dto.getStudent().get().getId(), courseId);
         return dto;
     }
    
-    public MenuDto processDeleteStudentFromCourse(BufferedReader reader) {
+    public MenuDto processDeleteStudentFromCourse(BufferedReader reader,
+                            StudentDao studentDao, CourseDao courseDao) {
         MenuDto dto = new MenuDto();
         
-        List<Student> students = STUDENT_DAO.getAll();
-        selectEntityFromList(reader, dto, students, STUDENT_DAO);
+        List<Student> students = studentDao.getAll();
+        selectEntityFromList(reader, dto, students, studentDao);
         
         if(dto.isCanceled()) {
             return dto;
         }
         
-        List<Course> coursesOfStudent = COURSE_DAO
+        List<Course> coursesOfStudent = courseDao
                 .getCoursesByStudentId(dto.getStudent().get().getId());
-        selectEntityFromList(reader, dto, coursesOfStudent, COURSE_DAO);
+        selectEntityFromList(reader, dto, coursesOfStudent, courseDao);
         
         if(dto.isCanceled()) {
             return dto;
         }
         
-        STUDENT_DAO.deleteStudentFromCourse(dto.getStudent().get().getId(),
+        studentDao.deleteStudentFromCourse(dto.getStudent().get().getId(),
                                             dto.getCourse().get().getId());
         return dto;
     }
     
-    public MenuDto processGetStudentsByCourse(BufferedReader reader) {
+    public MenuDto processGetStudentsByCourse(BufferedReader reader,
+                                              StudentDao studentDao,
+                                              CourseDao courseDao) {
         MenuDto dto = new MenuDto();
-        List<Course> coursesList = COURSE_DAO.getAll();
-        selectEntityFromList(reader, dto, coursesList, COURSE_DAO);
+        List<Course> coursesList = courseDao.getAll();
+        selectEntityFromList(reader, dto, coursesList, courseDao);
         
         if(dto.isCanceled()) {
             return dto;
         
         }
-        List<Student> students = STUDENT_DAO
+        List<Student> students = studentDao
                 .getAllByCourseName(dto.getCourse().get().getName());
         dto.setStudents(students);
         return dto;
     }
     
-    public MenuDto processFindGroupsByStudentCount(BufferedReader reader) {
+    public MenuDto processFindGroupsByStudentCount(BufferedReader reader, GroupDao groupDao) {
         MenuDto dto = new MenuDto();
 
         while(true) {
@@ -167,7 +172,7 @@ public class Processor {
             }
           
             if(isInteger(response)) {
-                List<Group> groups = GROUP_DAO
+                List<Group> groups = groupDao
                         .getAllByStudentsQuantity(Integer.valueOf(response));
                 if(groups.isEmpty()) {
                     System.out.println(Formatter.NO_SUCH_GROUPS);
@@ -198,6 +203,7 @@ public class Processor {
            }    
            selectIfValidResponse(response, dto, list, entityDao);
         }
+        dto.setSelected(false);
     }
     
     private <T> void selectIfValidResponse(String response,

@@ -93,7 +93,7 @@ class CourseDaoTest {
     void getCoursesByStudentId_shouldWorkCorrectly() throws SQLException {
         List<Course> courses = insertCourses();
         insertTestStudents();
-        addstudentsToCourses();
+        addStudentsToCourses();
         List<Course> coursesOfStudentId1 = new ArrayList<>(courses);
         List<Course> coursesOfStudentId2 = Arrays.asList(courses.get(0), courses.get(1));
         List<Course> coursesOfStudentId3 = Arrays.asList(courses.get(1));
@@ -106,7 +106,7 @@ class CourseDaoTest {
     void getCoursesStudentDoesNotHave_shouldWorkCorrectly() throws SQLException{
         List<Course> courses = insertCourses();
         insertTestStudents();
-        addstudentsToCourses();
+        addStudentsToCourses();
         List<Course> coursesOfStudentId1 = new ArrayList<>();
         List<Course> coursesOfStudentId2 = Arrays.asList(courses.get(2));
         List<Course> coursesOfStudentId3 = Arrays.asList(courses.get(0), courses.get(2));
@@ -150,7 +150,7 @@ class CourseDaoTest {
         }
     }
     
-    private void addstudentsToCourses() throws SQLException {
+    private void addStudentsToCourses() throws SQLException {
         String sql = """
                 INSERT INTO students_courses
                 (student_id, course_id)
