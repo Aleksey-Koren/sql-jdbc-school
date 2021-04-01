@@ -1,0 +1,6 @@
+math|This is
+description of
+math course;
+chemistry|This is
+description of
+chemistry course;
