@@ -28,9 +28,6 @@ public class Processor {
     }
     private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z]{2,30}$");
     private static final String BACK = "back";
-//    private static final StudentDao STUDENT_DAO = StudentDao.getInstance();
-//    private static final CourseDao COURSE_DAO = CourseDao.getInstance();
-//    private static final GroupDao GROUP_DAO = GroupDao.getInstance();
     
     public String requestToUser(BufferedReader reader, String prompt) {
         try {
@@ -79,21 +76,21 @@ public class Processor {
         return matcher.find();
     }
 
-    public MenuDto processDeleteById(BufferedReader reader, StudentDao dao) {
+    public MenuDto processDeleteById(BufferedReader reader, StudentDao studentDao) {
         MenuDto dto = new MenuDto();
         
-        List<Student> students = dao.getAll();
-        selectEntityFromList(reader, dto, students, dao);
+        List<Student> students = studentDao.getAll();
+        selectEntityFromList(reader, dto, students, studentDao);
         
         if(dto.isCanceled()) {
             return dto;
         }
         
-        dao.deleteById(dto.getStudent().get().getId());
+        studentDao.deleteById(dto.getStudent().get().getId());
         return dto;
     }
 
-    public MenuDto processAddStudentCourse(BufferedReader reader,
+    public MenuDto processAddStudentToCourse(BufferedReader reader,
                                            StudentDao studentDao, CourseDao courseDao) {
         MenuDto dto = new MenuDto();
         

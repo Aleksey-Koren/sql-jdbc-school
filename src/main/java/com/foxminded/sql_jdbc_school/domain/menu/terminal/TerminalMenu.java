@@ -48,7 +48,7 @@ public class TerminalMenu {
                 }
                 
                 case "3" -> {
-                    MenuDto dto = processor.processAddStudentCourse(reader,
+                    MenuDto dto = processor.processAddStudentToCourse(reader,
                                                                     STUDENT_DAO,
                                                                     COURSE_DAO);
                     if (dto.isCanceled()) {
@@ -79,7 +79,7 @@ public class TerminalMenu {
                 }
                 
                 case "6" -> {
-                    MenuDto dto = processor.processFindGroupsByStudentCount(reader);
+                    MenuDto dto = processor.processFindGroupsByStudentCount(reader, GROUP_DAO);
                     if (dto.isCanceled()) {
                         continue;
                     }

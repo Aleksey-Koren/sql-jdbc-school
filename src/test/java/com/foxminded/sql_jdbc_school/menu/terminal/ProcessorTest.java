@@ -1,53 +1,44 @@
 package com.foxminded.sql_jdbc_school.menu.terminal;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.foxminded.sql_jdbc_school.dao.TablesCreation;
 import com.foxminded.sql_jdbc_school.dao.entity_dao.CourseDao;
+import com.foxminded.sql_jdbc_school.dao.entity_dao.GroupDao;
 import com.foxminded.sql_jdbc_school.dao.entity_dao.StudentDao;
-import com.foxminded.sql_jdbc_school.dao.util.ConnectionManager;
 import com.foxminded.sql_jdbc_school.domain.entity.Course;
+import com.foxminded.sql_jdbc_school.domain.entity.Group;
 import com.foxminded.sql_jdbc_school.domain.entity.Student;
 import com.foxminded.sql_jdbc_school.domain.menu.terminal.Processor;
 import com.foxminded.sql_jdbc_school.domain.menu.terminal.ToStringFormatter;
 import com.foxminded.sql_jdbc_school.dto.MenuDto;
 
-@TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 class ProcessorTest {
     
     private Processor processor = new Processor(new ToStringFormatter());
-    
-    @BeforeEach
-    private void prepareTables() {
-        TablesCreation creation = new TablesCreation();
-        creation.create();
-    }
-    
+
     @Test
     void requestToUser_shouldReturnUserInput() throws IOException{
         String expected = "expected response";
@@ -73,237 +64,252 @@ class ProcessorTest {
     
     @Test
     void processAddNewStudent_shouldWorkCorrectly() throws IOException {
-        Student forCaptor = new Student("testname", "testname");
+        Student expectedForCaptor = new Student("testname", "testname");
         Student toReturn = new Student(1, null, "testname", "testname");
         BufferedReader reader = Mockito.mock(BufferedReader.class);
         StudentDao studentDao = Mockito.mock(StudentDao.class);
-
         InOrder inOrder = Mockito.inOrder(reader, studentDao);
-        Mockito.when(studentDao.save(forCaptor)).thenReturn(toReturn);
+        Mockito.when(studentDao.save(expectedForCaptor)).thenReturn(toReturn);
         Mockito.when(reader.readLine()).thenReturn("testname");
         ArgumentCaptor<Student> captor = ArgumentCaptor.forClass(Student.class);
+        
         MenuDto dto = processor.processAddNewStudent(reader, studentDao);
+        
         inOrder.verify(reader, Mockito.times(2)).readLine();
         inOrder.verify(studentDao).save(captor.capture());
-        Student student = dto.getStudent().get();
-        assertEquals(forCaptor, captor.getValue());
+        
+        assertEquals(expectedForCaptor, captor.getValue());
+        assertSame(toReturn, dto.getStudent().get());
+        assertFalse(dto.isCanceled());
+        
+        Mockito.when(reader.readLine()).thenReturn("back");
+        
+        MenuDto canseledDTO = processor.processAddNewStudent(reader, studentDao);
+        
+        inOrder.verify(reader).readLine();
+        inOrder.verifyNoMoreInteractions();
+        
+        assertTrue(canseledDTO.isCanceled());
     }
     
     @Test
-    void deleteById_shouldWorkCorrectly() throws SQLException, IOException {
-        int expectedId = 1;
-        Student expectedStudent = new Student(expectedId, null, "firstName", "lastName");
-        insertStudent();
+    void processDeleteById_shouldWorkCorrectly() throws SQLException, IOException {
+        List<Student> expectedStudents = retriveTestStudents();
+        int expectedStudentId = expectedStudents.get(0).getId();
+        Student expectedStudent = expectedStudents.get(0);
         BufferedReader reader = Mockito.mock(BufferedReader.class);
-        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedId));
-        StudentDao studentDao = Mockito.spy(StudentDao.getInstance());
+        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedStudentId));
+        StudentDao studentDao = Mockito.mock(StudentDao.class);
+        Mockito.when(studentDao.getAll()).thenReturn(expectedStudents);
+        Mockito.when(studentDao.getById(expectedStudentId)).thenReturn(Optional.of(expectedStudent));
+        Mockito.when(studentDao.deleteById(expectedStudent.getId())).thenReturn(true);
+        
         MenuDto dto = processor.processDeleteById(reader, studentDao);
+        
         InOrder inOrder = Mockito.inOrder(reader, studentDao);
         inOrder.verify(studentDao).getAll();
         inOrder.verify(reader).readLine();
-        inOrder.verify(studentDao).deleteById(expectedId);
-        assertEquals(expectedStudent, dto.getStudent().get());      
+        inOrder.verify(studentDao).getById(expectedStudentId);
+        inOrder.verify(studentDao).deleteById(expectedStudentId);
+        inOrder.verifyNoMoreInteractions();
+        
+        assertSame(expectedStudent, dto.getStudent().get());
+        assertFalse(dto.isCanceled());
+        
+        Mockito.when(reader.readLine()).thenReturn("back");
+        
+        MenuDto canseledDTO = processor.processDeleteById(reader, studentDao);
+        
+        inOrder.verify(studentDao).getAll();
+        inOrder.verify(reader).readLine();
+        inOrder.verifyNoMoreInteractions();
+        
+        assertTrue(canseledDTO.isCanceled());
     }
-
-
     
     @Test
     void processAddStudentToCourse_shouldWorkCorrectly() throws SQLException, IOException {
-        Integer expectedId = 1;
-        insertStudent();
-        insertCourse();
-        Student expectedStudent = new Student(expectedId, null , "firstName", "lastName");
-        Course expecCourse = new Course(expectedId, "testName0", "testDescription");
+        List<Student> expectedStudents = retriveTestStudents();
+        Student expectedStudent = expectedStudents.get(0);
+        Integer expectedStudentId = expectedStudent.getId();
+        List<Course> expectedCourses = retriveTestCourses();
+        Course expectedCourse = expectedCourses.get(1);
+        Integer expectedCourseId = expectedCourse.getId();
         Set<Integer> expectedSet = new HashSet<>();
-        expectedSet.add(expectedId);
-        BufferedReader reader = Mockito.mock(BufferedReader.class);
-        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedId));
-        StudentDao studentDao = Mockito.spy(StudentDao.getInstance());
-        CourseDao courseDao  = Mockito.spy(CourseDao.getInstance());        
-        InOrder inOrder = Mockito.inOrder(reader, studentDao, courseDao);
-                     
-        MenuDto dto = processor.processAddStudentCourse(reader, studentDao, courseDao);
+        expectedSet.add(expectedCourseId);
         
-        assertEquals(expectedStudent, dto.getStudent().get());
-        assertEquals(expecCourse, dto.getCourse().get());
+        BufferedReader reader = Mockito.mock(BufferedReader.class);
+        StudentDao studentDao = Mockito.mock(StudentDao.class);
+        CourseDao courseDao  = Mockito.mock(CourseDao.class);
+        
+        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedStudentId), 
+                String.valueOf(expectedCourseId));
+        Mockito.when(studentDao.getAll()).thenReturn(expectedStudents);
+        Mockito.when(studentDao.getById(expectedStudentId)).thenReturn(Optional.of(expectedStudent));
+        Mockito.when(courseDao.getCoursesStudentDoesNotHave(expectedStudentId))
+                                    .thenReturn(expectedCourses);
+        Mockito.when(courseDao.getById(expectedCourseId)).thenReturn(Optional.of(expectedCourse));
+        
+        MenuDto dto = processor.processAddStudentToCourse(reader, studentDao, courseDao);
+        
+        assertSame(expectedStudent, dto.getStudent().get());
+        assertSame(expectedCourse, dto.getCourse().get());
+        assertFalse(dto.isCanceled());
+        
+        InOrder inOrder = Mockito.inOrder(reader, studentDao, courseDao);
+        inOrder.verify(studentDao).getAll();
+        inOrder.verify(reader).readLine();
+        inOrder.verify(studentDao).getById(expectedStudentId);
+        inOrder.verify(courseDao).getCoursesStudentDoesNotHave(expectedStudentId);
+        inOrder.verify(reader).readLine();
+        inOrder.verify(courseDao).getById(expectedCourseId);
+        inOrder.verify(studentDao).addStudentToCourses(expectedStudentId, expectedSet);
+        
+        Mockito.when(reader.readLine()).thenReturn("back");
+        
+        MenuDto canseledDTO = processor.processAddStudentToCourse(reader, studentDao, courseDao);
         
         inOrder.verify(studentDao).getAll();
         inOrder.verify(reader).readLine();
-        inOrder.verify(studentDao).getById(expectedId);
-        inOrder.verify(courseDao).getCoursesStudentDoesNotHave(expectedId);
-        inOrder.verify(reader).readLine();
-        inOrder.verify(courseDao).getById(expectedId);
-        inOrder.verify(studentDao).addStudentToCourses(expectedId, expectedSet);
+        inOrder.verifyNoMoreInteractions();
+        
+        assertTrue(canseledDTO.isCanceled());
     }
     
     @Test
     void processDeleteStudentFromCourse_shouldWorkCorrectly() throws SQLException, IOException {
-        Integer expectedId = 1;
-        insertStudent();
-        insertCourse();
-        addStudentToCourse();
-        Student expectedStudent = new Student(expectedId, null , "firstName", "lastName");
-        Course expecCourse = new Course(expectedId, "testName0", "testDescription");
-                
+        List<Student> expectedStudents = retriveTestStudents();
+        Student expectedStudent = expectedStudents.get(0);
+        Integer expectedStudentId = expectedStudent.getId();
+        List<Course> expectedCourses = retriveTestCourses();
+        Course expectedCourse = expectedCourses.get(1);
+        Integer expectedCourseId = expectedCourse.getId();
+        
         BufferedReader reader = Mockito.mock(BufferedReader.class);
-        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedId));
-        StudentDao studentDao = Mockito.spy(StudentDao.getInstance());
-        CourseDao courseDao  = Mockito.spy(CourseDao.getInstance());        
+        StudentDao studentDao = Mockito.mock(StudentDao.class);
+        CourseDao courseDao  = Mockito.mock(CourseDao.class);
+        
+        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedStudentId), 
+                String.valueOf(expectedCourseId));
+        Mockito.when(studentDao.getAll()).thenReturn(expectedStudents);
+        Mockito.when(studentDao.getById(expectedStudentId)).thenReturn(Optional.of(expectedStudent));
+        Mockito.when(courseDao.getCoursesByStudentId(expectedStudentId))
+                                    .thenReturn(expectedCourses);
+        Mockito.when(courseDao.getById(expectedCourseId)).thenReturn(Optional.of(expectedCourse));
+        Mockito.when(studentDao.deleteStudentFromCourse(expectedStudentId, expectedCourseId))
+                                    .thenReturn(true);
+        
         InOrder inOrder = Mockito.inOrder(reader, studentDao, courseDao);
         
         MenuDto dto = processor.processDeleteStudentFromCourse(reader, studentDao, courseDao);
                 
-        assertEquals(expectedStudent, dto.getStudent().get());
-        assertEquals(expecCourse, dto.getCourse().get());
+        assertSame(expectedStudent, dto.getStudent().get());
+        assertSame(expectedCourse, dto.getCourse().get());
+        assertFalse(dto.isCanceled());
         
         inOrder.verify(studentDao).getAll();
         inOrder.verify(reader).readLine();
-        inOrder.verify(studentDao).getById(expectedId);
-        inOrder.verify(courseDao).getCoursesByStudentId(expectedId);
+        inOrder.verify(studentDao).getById(expectedStudentId);
+        inOrder.verify(courseDao).getCoursesByStudentId(expectedStudentId);
         inOrder.verify(reader).readLine();
-        inOrder.verify(courseDao).getById(expectedId);
-        inOrder.verify(studentDao).deleteStudentFromCourse(expectedId, expectedId);
+        inOrder.verify(courseDao).getById(expectedCourseId);
+        inOrder.verify(studentDao).deleteStudentFromCourse(expectedStudentId, expectedCourseId);
+        
+        Mockito.when(reader.readLine()).thenReturn("back");
+        
+        MenuDto canseledDTO = processor.processDeleteStudentFromCourse(reader, studentDao, courseDao);
+        
+        inOrder.verify(studentDao).getAll();
+        inOrder.verify(reader).readLine();
+        inOrder.verifyNoMoreInteractions();
+        
+        assertTrue(canseledDTO.isCanceled());
     }
     
     @Test
     void processGetStudentsByCourse_shouldWorkCorrectly() throws SQLException, IOException {
-        Integer expectedId = 1;
-        String expectedCourseName = "testName0";
-        insertTestStudents();
-        insertTestCourses();
-        addStudentsToCourses();
-        List<Student> expectedStudents = Arrays.asList(new Student(1, null, "test", "test"),
-                                                       new Student(2, null, "test", "test"),
-                                                       new Student(4, null, "test", "test"));
+        List<Student> expectedStudents = retriveTestStudents();
+        List<Course> expectedCourses = retriveTestCourses();
+        Course expectedCourse = expectedCourses.get(1);
+        Integer expectedCourseId = expectedCourse.getId();
         
         BufferedReader reader = Mockito.mock(BufferedReader.class);
-        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedId));
-        StudentDao studentDao = Mockito.spy(StudentDao.getInstance());
-        CourseDao courseDao  = Mockito.spy(CourseDao.getInstance());        
+        StudentDao studentDao = Mockito.mock(StudentDao.class);
+        CourseDao courseDao  = Mockito.mock(CourseDao.class);
+        
+        Mockito.when(reader.readLine()).thenReturn(String.valueOf(expectedCourseId));
+        Mockito.when(courseDao.getAll()).thenReturn(expectedCourses);
+        Mockito.when(courseDao.getById(expectedCourseId)).thenReturn(Optional.of(expectedCourse));
+        Mockito.when(studentDao.getAllByCourseName(expectedCourse.getName()))
+                                        .thenReturn(expectedStudents);
+           
         InOrder inOrder = Mockito.inOrder(reader, studentDao, courseDao);
         
         MenuDto dto = processor.processGetStudentsByCourse(reader, studentDao, courseDao);
         
-        List<Student> students = dto.getStudents();
-        assertEquals(expectedStudents, students);
+        assertSame(expectedStudents, dto.getStudents());
+        assertFalse(dto.isCanceled());
         
         inOrder.verify(courseDao).getAll();
         inOrder.verify(reader).readLine();
-        inOrder.verify(courseDao).getById(expectedId);
-        inOrder.verify(studentDao).getAllByCourseName(expectedCourseName);    
-    }
-    
-    private void addStudentToCourse() throws SQLException {
-        try(Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate("""
-                    INSERT INTO students_courses 
-                    (student_id, course_id)
-                    VALUES
-                    (1, 1);""");
-        } 
-    }
-
-    private void insertStudent() throws SQLException {
-        try(Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate("""
-                    INSERT INTO students 
-                    (group_id, first_name, last_name)
-                    VALUES
-                    (NULL, 'firstName', 'lastName');""");
-        }       
-    }
-
-    private void insertCourse() throws SQLException {
-        try(Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate("""
-                    INSERT INTO courses
-                    (course_name, course_description)
-                    VALUES
-                    ('testName0', 'testDescription');""");
-        }    
-    }
-    
-    private void insertTestStudents() throws SQLException {
-        String sql = """
-                INSERT INTO students
-                (group_id, first_name, last_name)
-                VALUES
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test'),
-                (null, 'test', 'test');""";
+        inOrder.verify(courseDao).getById(expectedCourseId);
+        inOrder.verify(studentDao).getAllByCourseName(expectedCourse.getName());
         
-        try(Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate(sql);
-        }
+        Mockito.when(reader.readLine()).thenReturn("back");
+        
+        MenuDto canseledDTO = processor.processGetStudentsByCourse(reader, studentDao, courseDao);
+        
+        inOrder.verify(courseDao).getAll();
+        inOrder.verify(reader).readLine();
+        inOrder.verifyNoMoreInteractions();
+        
+        assertTrue(canseledDTO.isCanceled());
     }
     
-    private void insertTestCourses() throws SQLException {
+    @Test
+    void processFindGroupsByStudentCount_shouldWorkCorrectly() throws IOException {
+        List<Group> expectedGroups = retriveTestGroups();
+        Integer expectedStudentCount = 15;
         
-        String sql = """
-                INSERT INTO courses
-                (id, course_name, course_description)
-                VALUES
-                (1, 'testName0', 'testDescription'),
-                (2, 'testName1', 'testDescription'),
-                (3, 'testName2', 'testDescription');""";
+        BufferedReader reader = Mockito.mock(BufferedReader.class);
+        GroupDao groupDao = Mockito.mock(GroupDao.class);
         
-        try(Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate(sql);
-        }    
+        Mockito.when(reader.readLine()).thenReturn("15");
+        Mockito.when(groupDao.getAllByStudentsQuantity(expectedStudentCount))
+                               .thenReturn(expectedGroups);
+        
+        InOrder inOrder = Mockito.inOrder(reader, groupDao);
+        
+        MenuDto dto = processor.processFindGroupsByStudentCount(reader, groupDao);
+        
+        inOrder.verify(reader).readLine();
+        inOrder.verify(groupDao).getAllByStudentsQuantity(expectedStudentCount);
+        inOrder.verifyNoMoreInteractions();
+        
+        assertSame(expectedGroups, dto.getGroups());
+        
+        Mockito.when(reader.readLine()).thenReturn("back");
+        
+        MenuDto canseledDTO = processor.processFindGroupsByStudentCount(reader, groupDao);
+        inOrder.verify(reader).readLine();
+        inOrder.verifyNoMoreInteractions();
+        assertTrue(canseledDTO.isCanceled());
     }
     
-    private void addStudentsToCourses() throws SQLException {
-        String sql = """
-                INSERT INTO students_courses
-                (student_id, course_id)
-                VALUES
-                (1, 1),
-                (1, 2),
-                (1, 3),
-                (2, 1),
-                (2, 2),
-                (3, 2),
-                (4, 1),
-                (5, 3),
-                (6, 2),
-                (7, 2),
-                (8, 2),
-                (9, 2),
-                (10, 2);""";
-        
-        try(Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate(sql);
-        }
+    private List<Student> retriveTestStudents() {
+        return Arrays.asList(new Student(1, null, "test", "test"),
+                             new Student(2, null, "test", "test"),
+                             new Student(4, null, "test", "test"));
     }
     
+    private List<Course> retriveTestCourses() {
+        return Arrays.asList(new Course(1, "testName1", "testDescription1"),
+                             new Course(2, "testName2", "testDescription2"));
+    }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
+    private List<Group> retriveTestGroups() {
+        return Arrays.asList(new Group(1, "qw-23"),
+                             new Group(2, "qr-53"),
+                             new Group(3, "as-72"));
+    }
 }
